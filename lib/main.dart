@@ -14,7 +14,7 @@ import 'services/storage_service.dart';
 import 'wrapper.dart';
 
 void main() async {
-  WidgetsFlutterBinding.1ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
 
   try {
     await Firebase.initializeApp(
