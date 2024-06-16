@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'services/database_service.dart';
+import 'services/storage_service.dart';
 
 class Home extends StatelessWidget {
   final DBService dbs;
+  final StorageService st;
 
-  const Home({super.key, required this.dbs});
+  const Home({super.key, required this.dbs, required this.st});
 
   @override
   Widget build(BuildContext context) {
