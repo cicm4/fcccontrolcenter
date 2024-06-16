@@ -21,10 +21,7 @@ class DefaultFirebaseOptions {
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for android - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return android;
       case TargetPlatform.iOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for ios - '
@@ -33,10 +30,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.macOS:
         return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return android;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -57,6 +51,14 @@ class DefaultFirebaseOptions {
     authDomain: 'fccapp-4220d.firebaseapp.com',
     storageBucket: 'fccapp-4220d.appspot.com',
     measurementId: 'G-RC291FJY6P',
+  );
+
+  static const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'AIzaSyDJdqxRuH81e8S5pZCgK4TWnN8aOrFUUx4',
+    appId: '1:356823887457:android:c1658bdfdede5b6f404420',
+    messagingSenderId: '356823887457',
+    projectId: 'fccapp-4220d',
+    storageBucket: 'fccapp-4220d.appspot.com',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(

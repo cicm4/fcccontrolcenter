@@ -1,4 +1,4 @@
-// Required imports for main.dart
+import 'package:fcccontrolcenter/firebase_options.dart';
 import 'package:fcccontrolcenter/services/auth_service.dart';
 import 'package:fcccontrolcenter/shared/shared/routes.dart';
 import 'package:fcccontrolcenter/shared/shared/theme.dart';
@@ -10,13 +10,20 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'services/database_service.dart';
 import 'services/user_service.dart';
 import 'services/storage_service.dart';
+
 import 'wrapper.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  WidgetsFlutterBinding.1ensureInitialized();
 
-  runApp(const MyApp());
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform
+    );
+    runApp(const MyApp());
+  } catch (e) {
+    print('Failed to initialize Firebase: $e');
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -35,7 +42,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         routes: getAppRoutes(auth, dbs, st),
         theme: generalTheme,
-        home: Wrapper(auth: auth, dbs: dbs, st: st,),
+        home: Wrapper(auth: auth, dbs: dbs, st: st),
       ),
     );
   }
