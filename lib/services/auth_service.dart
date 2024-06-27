@@ -1,3 +1,4 @@
+import 'package:fcccontrolcenter/services/admin_service.dart';
 import 'package:fcccontrolcenter/services/database_service.dart';
 import 'package:fcccontrolcenter/services/user_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -27,16 +28,24 @@ class AuthService {
   Future<dynamic> signInEmailAndPass(
       {required emailAddress, required password}) async {
     try {
-      // Create a UserService instance
-      UserService us = UserService();
       // Attempt to sign in the user using their email and password using the firebase library method
       await _firebaseAuth.signInWithEmailAndPassword(
           email: emailAddress, password: password);
       // Check if the user is in the database
-      bool isUserInDB = await _isUserInDB(uid: us.user?.uid);
+      UserService us = UserService();
+
+      bool isUserInDB = await _isUserInDB(uid: us.user!.uid);
       // If the user is not found in the database, add them
 
+      bool isUserAdmin = await AdminService.isAdmin(userService: us, dbService: dbs);
+
+      if (!isUserAdmin) {
+        throw FirebaseAuthException(
+            code: 'user-not-found', message: 'User not found');
+      }
+
       if (!isUserInDB) {
+        AuthService.signOut();
         throw FirebaseAuthException(
             code: 'user-not-found', message: 'User not found');
       }

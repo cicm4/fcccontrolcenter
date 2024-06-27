@@ -1,7 +1,6 @@
 // Required imports for login.dart
 import 'package:fcccontrolcenter/services/auth_service.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 
 class Login extends StatefulWidget {
@@ -28,29 +27,22 @@ class _LoginState extends State<Login> {
           children: [
             TextField(
               controller: _emailController,
-              decoration: InputDecoration(labelText: "Email"),
+              decoration: const InputDecoration(labelText: "Email"),
             ),
             TextField(
               controller: _passwordController,
-              decoration: InputDecoration(labelText: "Password"),
+              decoration: const InputDecoration(labelText: "Password"),
               obscureText: true,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
                 String email = _emailController.text;
                 String password = _passwordController.text;
-                bool success = await widget.auth.signInEmailAndPass(
+                bool? success = await widget.auth.signInEmailAndPass(
                   emailAddress: email,
                   password: password,
                 );
-                if (success) {
-                  Navigator.of(context).pushReplacementNamed('/home');
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Login failed")),
-                  );
-                }
               },
               child: Text("Login"),
             ),

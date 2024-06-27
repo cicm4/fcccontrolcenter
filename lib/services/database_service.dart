@@ -179,5 +179,68 @@ Future<bool> addEntryToDBWithName(
     return null;
   }
 
+/// Retrieves all documents from a specified collection in the database.
+///
+/// This method fetches all documents from a given path (collection) in the database and returns them as a list of maps. Each map represents the data of a single document within the collection.
+///
+/// @param path The path of the collection from which documents are to be retrieved.
+///
+/// @return A Future that completes with a list of maps, where each map contains the data of a single document. If an error occurs during the fetch, or if the collection is empty, the method may return null or an empty list.
+///
+/// Usage example:
+/// ```dart
+/// DBService dbService = DBService();
+/// dbService.getCollection(path: 'users').then((List<Map<String, dynamic>>? users) {
+///   if (users != null) {
+///     for (var user in users) {
+///       print(user);
+///     }
+///   }
+/// });
+/// ```
+  Future<List<Map<String, dynamic>>?> getCollection({required String path}) async {
+    try {
+      return await db.collection(path).get().then((QuerySnapshot querySnapshot) {
+        List<Map<String, dynamic>> list = [];
+        for (var doc in querySnapshot.docs) {
+          list.add(doc.data() as Map<String, dynamic>);
+        }
+        return list;
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print(e.toString());
+        throw Exception('Error getting collection: $e');
+      }
+    }
+  }
+
+  /// Updates a document in the database.
+  /// 
+  /// This function attempts to update a document in the database at a specified path.
+  /// It requires a path and data as parameters. The data parameter is expected to be a map of key-value pairs representing the fields to be updated.
+  /// 
+  /// @param path The path in the database where the document is located.
+  /// @param data A map of key-value pairs representing the fields to be updated.
+  /// 
+  /// @return A Future that completes with no return value. If an error occurs during the update, the method may throw an exception if in debug mode.
+  ///
+  /// Usage example:
+  /// ```dart
+  /// DBService dbService = DBService();
+  /// dbService.updateDocument(path: 'users/123', data: {'name': 'John Doe', 'age': 30}).then((_) {
+  ///  print('Document updated successfully');
+  /// });
+  /// ```
+  Future<void> updateDocument({required String path, required Map<String, dynamic> data}) async {
+    try {
+      await db.doc(path).update(data);
+    } catch (e) {
+      if (kDebugMode) {
+        print(e.toString());
+        throw Exception('Error updating document: $e');
+      }
+    }
+  }
   //end of class
 }
