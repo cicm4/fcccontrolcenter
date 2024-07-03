@@ -1,4 +1,4 @@
-import 'package:fcccontrolcenter/home.dart';
+import 'package:fcccontrolcenter/shared/home/home.dart';
 import 'package:fcccontrolcenter/login.dart';
 import 'package:fcccontrolcenter/services/auth_service.dart';
 import 'package:fcccontrolcenter/services/database_service.dart';
