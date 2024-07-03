@@ -90,17 +90,12 @@ class _HomeState extends State<Home> {
                 ElevatedButton(
                   onPressed: _updateUsers,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0b512d),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
                   ),
                   child: const Text(
                     'Actualizar Usuarios',
                     style: TextStyle(
                       fontFamily: 'Montserrat',
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
                     ),
                   ),
                 ),

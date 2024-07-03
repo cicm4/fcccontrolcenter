@@ -9,7 +9,9 @@ class CreateUserButton extends StatelessWidget {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: const Text('Crear Usuario'),
+              alignment: Alignment.center,
+              title: const Text('Crear Usuario',
+              textAlign: TextAlign.center,),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
@@ -20,6 +22,7 @@ class CreateUserButton extends StatelessWidget {
                     },
                     child: const Text('Registrar Uno'),
                   ),
+                  const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
                       Navigator.of(context).pop();
