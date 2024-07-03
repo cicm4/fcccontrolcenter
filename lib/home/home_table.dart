@@ -41,6 +41,7 @@ class HomeTable extends StatelessWidget {
                   DataColumn(label: Text('')),
                 ],
                 source: UserDataTableSource(users, updateUser, deleteUser),
+                columnSpacing: constraints.maxWidth * 0.02,
               ),
             ],
           ),

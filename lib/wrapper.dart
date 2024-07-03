@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'services/database_service.dart';
 import 'services/storage_service.dart';
-import 'shared/home/home.dart';
+import 'home/home.dart';
 import 'login.dart';
 
 class Wrapper extends StatelessWidget {

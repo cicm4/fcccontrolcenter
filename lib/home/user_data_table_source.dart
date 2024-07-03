@@ -10,6 +10,15 @@ class UserDataTableSource extends DataTableSource {
   @override
   DataRow getRow(int index) {
     final user = users[index];
+
+    // Ensure that location and sport have valid initial values
+    if (!['Medellin', 'Llanogrande'].contains(user['location'])) {
+      user['location'] = 'Medellin';
+    }
+    if (!['Tennis', 'Golf'].contains(user['sport'])) {
+      user['sport'] = 'Tennis';
+    }
+
     return DataRow(cells: [
       DataCell(TextFormField(
         initialValue: user['displayName'] ?? '',
@@ -51,26 +60,34 @@ class UserDataTableSource extends DataTableSource {
           fontSize: 14,
         ),
       )),
-      DataCell(TextFormField(
-        initialValue: user['location'] ?? '',
-        onChanged: (value) {
-          user['location'] = value;
-        },
-        style: const TextStyle(
-          fontFamily: 'Montserrat',
-          fontSize: 14,
+      DataCell(
+        DropdownButtonFormField<String>(
+          value: user['location'],
+          onChanged: (String? newValue) {
+            user['location'] = newValue;
+          },
+          items: ['Medellin', 'Llanogrande'].map<DropdownMenuItem<String>>((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value),
+            );
+          }).toList(),
         ),
-      )),
-      DataCell(TextFormField(
-        initialValue: user['sport'] ?? '',
-        onChanged: (value) {
-          user['sport'] = value;
-        },
-        style: const TextStyle(
-          fontFamily: 'Montserrat',
-          fontSize: 14,
+      ),
+      DataCell(
+        DropdownButtonFormField<String>(
+          value: user['sport'],
+          onChanged: (String? newValue) {
+            user['sport'] = newValue;
+          },
+          items: ['Tennis', 'Golf'].map<DropdownMenuItem<String>>((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value),
+            );
+          }).toList(),
         ),
-      )),
+      ),
       DataCell(ElevatedButton(
         onPressed: () {
           // Handle Ayudas button logic here

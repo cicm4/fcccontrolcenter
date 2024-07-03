@@ -19,7 +19,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   List<Map<String, dynamic>>? users;
   List<Map<String, dynamic>>? originalUsers;
-  final int _rowsPerPage = 15;
+  final int _rowsPerPage = 10;
 
   @override
   void initState() {
