@@ -64,13 +64,16 @@ class DBService {
     try {
       // Fetch the document from the database
       final doc = await db.collection(path).doc(data).get();
+      
 
       // Return the data of the document
       return doc.data();
     } catch (e) {
+
       // If in debug mode, print the error
       if (kDebugMode) {
         print(e.toString());
+        throw Exception('Error getting data: $e, path: $path, data: $data');
       }
     }
     // If an error occurs, return null

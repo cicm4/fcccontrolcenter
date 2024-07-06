@@ -1,5 +1,5 @@
+import 'package:fcccontrolcenter/home/user_data_table_source.dart';
 import 'package:flutter/material.dart';
-import 'user_data_table_source.dart';
 
 class HomeTable extends StatelessWidget {
   final List<Map<String, dynamic>> users;
@@ -7,6 +7,7 @@ class HomeTable extends StatelessWidget {
   final dynamic dbs;
   final Function(int) updateUser;
   final Function(int) deleteUser;
+  final Function(int) showScholarshipInfo;  // Add this line
   final int rowsPerPage;
 
   const HomeTable({
@@ -15,6 +16,7 @@ class HomeTable extends StatelessWidget {
     required this.dbs,
     required this.updateUser,
     required this.deleteUser,
+    required this.showScholarshipInfo,  // Add this line
     required this.rowsPerPage,
   });
 
@@ -23,10 +25,9 @@ class HomeTable extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
+          child: Container(
+            width: MediaQuery.of(context).size.width,
+            child:
               PaginatedDataTable(
                 rowsPerPage: rowsPerPage,
                 columns: const [
@@ -40,10 +41,9 @@ class HomeTable extends StatelessWidget {
                   DataColumn(label: Text('Beca')),
                   DataColumn(label: Text('')),
                 ],
-                source: UserDataTableSource(users, updateUser, deleteUser),
+                source: UserDataTableSource(users, updateUser, deleteUser, showScholarshipInfo),  // Update this line
                 columnSpacing: constraints.maxWidth * 0.02,
               ),
-            ],
           ),
         );
       },

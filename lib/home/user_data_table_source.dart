@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'scholarship_popup.dart';
 
 class UserDataTableSource extends DataTableSource {
   final List<Map<String, dynamic>> users;
   final Function(int) updateUser;
   final Function(int) deleteUser;
+  final Function(int) showScholarshipInfo;  // Add this line
 
-  UserDataTableSource(this.users, this.updateUser, this.deleteUser);
+  UserDataTableSource(this.users, this.updateUser, this.deleteUser, this.showScholarshipInfo);  // Update this line
 
   @override
   DataRow getRow(int index) {
@@ -109,7 +111,7 @@ class UserDataTableSource extends DataTableSource {
       )),
       DataCell(ElevatedButton(
         onPressed: () {
-          // Handle Beca button logic here
+          showScholarshipInfo(index);  // Add this line
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF0b512d),

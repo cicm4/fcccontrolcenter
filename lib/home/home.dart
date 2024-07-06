@@ -1,10 +1,14 @@
 import 'package:fcccontrolcenter/services/database_service.dart';
+import 'package:fcccontrolcenter/services/scholarship_service.dart';
 import 'package:fcccontrolcenter/services/storage_service.dart';
+import 'package:fcccontrolcenter/services/user_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fcccontrolcenter/services/auth_service.dart';
 import 'package:fcccontrolcenter/services/db_user_service.dart';
 import 'home_table.dart';
 import 'create_user_button.dart';
+import 'scholarship_popup.dart';
 
 class Home extends StatefulWidget {
   final DBService dbs;
@@ -89,8 +93,7 @@ class _HomeState extends State<Home> {
                 const SizedBox(width: 20),
                 ElevatedButton(
                   onPressed: _updateUsers,
-                  style: ElevatedButton.styleFrom(
-                  ),
+                  style: ElevatedButton.styleFrom(),
                   child: const Text(
                     'Actualizar Usuarios',
                     style: TextStyle(
@@ -122,11 +125,12 @@ class _HomeState extends State<Home> {
                   dbs: widget.dbs,
                   updateUser: _updateUser,
                   deleteUser: _deleteUser,
+                  showScholarshipInfo: _showScholarshipInfo,
                   rowsPerPage: _rowsPerPage,
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
             TextButton(
               onPressed: () async {
                 await AuthService.signOut();
@@ -142,6 +146,7 @@ class _HomeState extends State<Home> {
               ),
             ),
             const SizedBox(height: 20),
+            Text("UserID: ${UserService().user?.uid}", style: const TextStyle(fontSize: 20, color: Colors.black))
           ],
         ),
       ),
@@ -193,6 +198,28 @@ class _HomeState extends State<Home> {
               child: const Text('Seguro', style: TextStyle(color: Colors.red)),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  void _showScholarshipInfo(int index) async {
+    final user = users![index];
+    final scholarshipService = await ScholarshipService.create(
+      uid: user['uid'],
+      dbService: widget.dbs,
+    );
+    final scholarshipData = scholarshipService.getScholarshipData();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return ScholarshipPopup(
+          scholarshipData: scholarshipData!,
+          removeFile: (fileType) async {
+            await scholarshipService.removeFile(fileType, widget.st);
+            await _fetchUsers(); // Refresh the user list
+          },
         );
       },
     );
