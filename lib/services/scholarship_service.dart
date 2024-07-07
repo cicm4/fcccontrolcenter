@@ -33,11 +33,9 @@ class ScholarshipService {
 
   Future<void> configureScholarship() async {
     Map<String, dynamic>? data = await _getScholarshipDataFromDB(uid);
-    //Scholarship.fromMap(await _getScholarshipDataFromDB());
-    if(data != null){
+    if (data != null) {
       scholarship = Scholarship.fromMap(data);
-    }
-    else{
+    } else {
       scholarship = Scholarship(
         uid: uid,
         gid: '',

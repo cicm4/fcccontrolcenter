@@ -2,7 +2,6 @@ import 'package:fcccontrolcenter/services/database_service.dart';
 import 'package:fcccontrolcenter/services/scholarship_service.dart';
 import 'package:fcccontrolcenter/services/storage_service.dart';
 import 'package:fcccontrolcenter/services/user_service.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fcccontrolcenter/services/auth_service.dart';
 import 'package:fcccontrolcenter/services/db_user_service.dart';
@@ -146,7 +145,7 @@ class _HomeState extends State<Home> {
               ),
             ),
             const SizedBox(height: 20),
-            Text("UserID: ${UserService().user?.uid}", style: const TextStyle(fontSize: 20, color: Colors.black))
+            Text("UserID: ${UserService().user?.uid}", style: const TextStyle(fontSize: 20, color: Colors.black)),
           ],
         ),
       ),
@@ -211,6 +210,7 @@ class _HomeState extends State<Home> {
     );
     final scholarshipData = scholarshipService.getScholarshipData();
 
+    // ignore: use_build_context_synchronously
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -220,6 +220,15 @@ class _HomeState extends State<Home> {
             await scholarshipService.removeFile(fileType, widget.st);
             await _fetchUsers(); // Refresh the user list
           },
+          downloadFile: (fileType) async {
+            final fileData = await scholarshipService.getURLFile(
+              fileType: UrlFileType.values.firstWhere((e) => e.toString().split('.').last == fileType),
+              storageService: widget.st,
+            );
+            // Handle file download logic here
+          },
+          scholarshipService: scholarshipService,
+          storageService: widget.st,
         );
       },
     );
