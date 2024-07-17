@@ -36,13 +36,17 @@ class _ScholarshipPopupState extends State<ScholarshipPopup> {
         child: ListBody(
           children: <Widget>[
             if (!widget.scholarshipData['isBankDataFile']) ...[
-              Text('Número de Cuenta Bancaria: ${widget.scholarshipData['bankaccount']}', style: const TextStyle(fontWeight: FontWeight.w700),),
+              Text(
+                'Número de Cuenta Bancaria: ${widget.scholarshipData['bankaccount']}',
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
             ] else ...[
               _buildFileItem('Cuenta Bancaria', UrlFileType.bankaccount),
             ],
             Text('Cedula: ${widget.scholarshipData['gid']}'),
             const SizedBox(height: 10),
-            _buildFileItem('Liquidación de Matrícula', UrlFileType.matriculaURL),
+            _buildFileItem(
+                'Liquidación de Matrícula', UrlFileType.matriculaURL),
             _buildFileItem('Horario', UrlFileType.horarioURL),
             _buildFileItem('Soporte de Pago', UrlFileType.soporteURL),
           ],
@@ -60,6 +64,9 @@ class _ScholarshipPopupState extends State<ScholarshipPopup> {
   }
 
   Widget _buildFileItem(String title, UrlFileType fileType) {
+    final screenSize = MediaQuery.of(context).size;
+    final sizeBasedOnScreenSize =
+        screenSize.width * 0.1; // Example: 10% of screen width
     return FutureBuilder<Uint8List?>(
       future: widget.scholarshipService.getURLFile(
         fileType: fileType,
@@ -67,7 +74,12 @@ class _ScholarshipPopupState extends State<ScholarshipPopup> {
       ),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
+          // loading symbol based on screen resultion and size
+          return SizedBox(
+            height: sizeBasedOnScreenSize,
+            width: sizeBasedOnScreenSize/3,
+            child: const CircularProgressIndicator(),
+          );
         } else if (snapshot.hasError) {
           return const Text('Error al cargar el archivo');
         } else if (snapshot.data == null) {
@@ -87,16 +99,18 @@ class _ScholarshipPopupState extends State<ScholarshipPopup> {
               Row(
                 children: [
                   ElevatedButton(
-                    onPressed: () => widget.downloadFile(fileType.toString().split('.').last),
+                    onPressed: () => widget
+                        .downloadFile(fileType.toString().split('.').last),
                     child: const Text('Descargar'),
                   ),
                   const SizedBox(width: 10),
                   ElevatedButton(
-                    onPressed: () => widget.removeFile(fileType.toString().split('.').last),
-                    child: const Text('Eliminar'),
+                    onPressed: () =>
+                        widget.removeFile(fileType.toString().split('.').last),
                     style: ElevatedButton.styleFrom(
-                      primary: Colors.red,
+                      backgroundColor: Colors.red,
                     ),
+                    child: const Text('Eliminar'),
                   ),
                 ],
               ),
@@ -117,7 +131,8 @@ class _ScholarshipPopupState extends State<ScholarshipPopup> {
       return FutureBuilder<ImageInfo>(
         future: _getImageInfo(image),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
+          if (snapshot.connectionState == ConnectionState.done &&
+              snapshot.hasData) {
             double imageWidth = snapshot.data!.image.width.toDouble();
             double imageHeight = snapshot.data!.image.height.toDouble();
 
@@ -129,7 +144,7 @@ class _ScholarshipPopupState extends State<ScholarshipPopup> {
             double containerHeight = imageHeight * scale;
 
             return Center(
-              child: Container(
+              child: SizedBox(
                 width: containerWidth,
                 height: containerHeight,
                 child: FittedBox(
@@ -139,16 +154,16 @@ class _ScholarshipPopupState extends State<ScholarshipPopup> {
               ),
             );
           } else {
-            return Container(
+            return SizedBox(
               width: maxWidth,
               height: maxHeight,
-              child: Center(child: CircularProgressIndicator()),
+              child: const Center(child: CircularProgressIndicator()),
             );
           }
         },
       );
     } else if (mimeType == 'application/pdf') {
-      return Container(
+      return SizedBox(
         width: maxWidth,
         height: maxHeight,
         child: PDFView(

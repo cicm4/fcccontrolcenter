@@ -216,6 +216,7 @@ Future<bool> addEntryToDBWithName(
         throw Exception('Error getting collection: $e');
       }
     }
+    return null;
   }
 
   /// Updates a document in the database.

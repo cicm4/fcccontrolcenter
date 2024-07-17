@@ -94,7 +94,7 @@ class _HomeState extends State<Home> {
                   onPressed: _updateUsers,
                   style: ElevatedButton.styleFrom(),
                   child: const Text(
-                    'Actualizar Usuarios',
+                    'Guardar Cambios',
                     style: TextStyle(
                       fontFamily: 'Montserrat',
                       fontWeight: FontWeight.w600,
@@ -145,7 +145,7 @@ class _HomeState extends State<Home> {
               ),
             ),
             const SizedBox(height: 20),
-            Text("UserID: ${UserService().user?.uid}", style: const TextStyle(fontSize: 20, color: Colors.black)),
+            //Text("UserID: ${UserService().user?.uid}", style: const TextStyle(fontSize: 20, color: Colors.black)),
           ],
         ),
       ),
@@ -225,6 +225,7 @@ class _HomeState extends State<Home> {
               fileType: UrlFileType.values.firstWhere((e) => e.toString().split('.').last == fileType),
               storageService: widget.st,
             );
+            
             // Handle file download logic here
           },
           scholarshipService: scholarshipService,

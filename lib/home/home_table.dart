@@ -10,7 +10,7 @@ class HomeTable extends StatelessWidget {
   final Function(int) showScholarshipInfo;  // Add this line
   final int rowsPerPage;
 
-  const HomeTable({
+  const HomeTable({super.key, 
     required this.users,
     required this.originalUsers,
     required this.dbs,
@@ -25,7 +25,7 @@ class HomeTable extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
-          child: Container(
+          child: SizedBox(
             width: MediaQuery.of(context).size.width,
             child:
               PaginatedDataTable(

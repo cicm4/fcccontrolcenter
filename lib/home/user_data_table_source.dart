@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'scholarship_popup.dart';
-
 class UserDataTableSource extends DataTableSource {
   final List<Map<String, dynamic>> users;
   final Function(int) updateUser;
