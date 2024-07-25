@@ -1,9 +1,8 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:fcccontrolcenter/services/scholarship_service.dart';
 import 'package:fcccontrolcenter/services/storage_service.dart';
-import 'package:flutter_pdfview/flutter_pdfview.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:mime/mime.dart';
 import 'dart:typed_data';
 
@@ -43,7 +42,7 @@ class _ScholarshipPopupState extends State<ScholarshipPopup> {
             ] else ...[
               _buildFileItem('Cuenta Bancaria', UrlFileType.bankaccount),
             ],
-            Text('Cedula: ${widget.scholarshipData['gid']}'),
+            Text('Cédula: ${widget.scholarshipData['gid']}'),
             const SizedBox(height: 10),
             _buildFileItem(
                 'Liquidación de Matrícula', UrlFileType.matriculaURL),
@@ -74,10 +73,10 @@ class _ScholarshipPopupState extends State<ScholarshipPopup> {
       ),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          // loading symbol based on screen resultion and size
+          // loading symbol based on screen resolution and size
           return SizedBox(
             height: sizeBasedOnScreenSize,
-            width: sizeBasedOnScreenSize/3,
+            width: sizeBasedOnScreenSize / 3,
             child: const CircularProgressIndicator(),
           );
         } else if (snapshot.hasError) {
@@ -125,6 +124,7 @@ class _ScholarshipPopupState extends State<ScholarshipPopup> {
   Widget _buildFilePreviewContainer(String mimeType, Uint8List data) {
     double maxWidth = 800;
     double maxHeight = 1250;
+    final GlobalKey<SfPdfViewerState> _pdfViewerKey = GlobalKey();
 
     if (mimeType.startsWith('image/')) {
       Image image = Image.memory(data, fit: BoxFit.contain);
@@ -166,13 +166,9 @@ class _ScholarshipPopupState extends State<ScholarshipPopup> {
       return SizedBox(
         width: maxWidth,
         height: maxHeight,
-        child: PDFView(
-          pdfData: data,
-          autoSpacing: true,
-          enableSwipe: true,
-          pageSnap: true,
-          swipeHorizontal: true,
-          nightMode: false,
+        child: SfPdfViewer.memory(
+          data,
+          key: _pdfViewerKey,
         ),
       );
     } else {
