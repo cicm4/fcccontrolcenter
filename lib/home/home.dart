@@ -1,10 +1,15 @@
+import 'dart:io';
+import 'package:dio/dio.dart';
+import 'package:download/download.dart';
 import 'package:fcccontrolcenter/services/database_service.dart';
 import 'package:fcccontrolcenter/services/scholarship_service.dart';
 import 'package:fcccontrolcenter/services/storage_service.dart';
-import 'package:fcccontrolcenter/services/user_service.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:fcccontrolcenter/services/auth_service.dart';
 import 'package:fcccontrolcenter/services/db_user_service.dart';
+import 'package:http/http.dart';
+import 'package:path_provider/path_provider.dart';
 import 'home_table.dart';
 import 'create_user_button.dart';
 import 'scholarship_popup.dart';
@@ -145,7 +150,6 @@ class _HomeState extends State<Home> {
               ),
             ),
             const SizedBox(height: 20),
-            //Text("UserID: ${UserService().user?.uid}", style: const TextStyle(fontSize: 20, color: Colors.black)),
           ],
         ),
       ),
@@ -215,19 +219,37 @@ class _HomeState extends State<Home> {
       context: context,
       builder: (BuildContext context) {
         return ScholarshipPopup(
+          name: user['displayName'],
           scholarshipData: scholarshipData!,
+          
           removeFile: (fileType) async {
             await scholarshipService.removeFile(fileType, widget.st);
             await _fetchUsers(); // Refresh the user list
           },
           downloadFile: (fileType) async {
-            final fileData = await scholarshipService.getURLFile(
+            final fileDataUrl = await scholarshipService.getURLFileURL(
               fileType: UrlFileType.values.firstWhere((e) => e.toString().split('.').last == fileType),
               storageService: widget.st,
             );
+
+            final fileDataName = await scholarshipService.getURLFileData(
+              fileType: UrlFileType.values.firstWhere((e) => e.toString().split('.').last == fileType),
+              storageService: widget.st,
+            );
+
+            print(fileDataUrl);
             
-            // Handle file download logic here
-          },
+            if (fileDataUrl != null && fileDataName != null) {
+              final downloadDir = await getDownloadsDirectory();
+              final extensionType = fileDataName.contains('.pdf') ? '.pdf' : fileDataUrl.contains('.png') ? '.png' : fileDataUrl.contains('.jpeg') ? '.jpeg' : fileDataUrl.contains('.jpg') ? '.jpg' : '';
+              //name based on URL File Type where matriculaURL is matricula, horarioURL is horario, soporteURL is soporte
+              final name = fileType == 'matriculaURL' ? 'matricula' : fileType == 'horarioURL' ? 'horario' : fileType == 'soporteURL' ? 'soporte' : fileType == 'bankaccountURL' ? 'bankaccount' : '';
+              final savePath = '${downloadDir!.path}/$name${user['displayName']}$extensionType';
+              final uri = Uri.parse(fileDataUrl);
+
+              await Dio().downloadUri(uri, savePath);
+            }
+          },  
           scholarshipService: scholarshipService,
           storageService: widget.st,
         );

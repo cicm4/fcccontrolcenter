@@ -124,4 +124,33 @@ class StorageService {
     }
     return Uint8List(0);
   }
+
+  Future<String?> getFileURL(
+      {required String path, required String data}) async {
+    try {
+      final url = await st.ref().child('$path/$data').getDownloadURL();
+      return url;
+    } catch (e) {
+      print('Error getting file URL: $e');
+      return null;
+    }
+  }
+
+  Future<bool> writeToFile(
+      {required Directory dir,
+      required File file,
+      required String path,
+      required String data}) async {
+    try {
+      st.ref('/$path/$data').writeToFile(file);
+    } catch (e) {
+      if (kDebugMode) {
+        print(e.toString());
+        return false;
+      } else {
+        return false;
+      }
+    }
+    return true;
+  }
 }

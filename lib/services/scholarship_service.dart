@@ -96,6 +96,107 @@ class ScholarshipService {
     }
   }
 
+  Future<String?> getURLFileURL({required UrlFileType fileType, required StorageService storageService}) async {
+    try {
+      String? path;
+      String? data;
+      switch (fileType) {
+        case UrlFileType.matriculaURL:
+          path = scholarship!.matriculaURL;
+          data = scholarship!.matriculaURLName;
+          break;
+        case UrlFileType.horarioURL:
+          path = scholarship!.horarioURL;
+          data = scholarship!.horarioURLName;
+          break;
+        case UrlFileType.soporteURL:
+          path = scholarship!.soporteURL;
+          data = scholarship!.soporteURLName;
+          break;
+        case UrlFileType.bankaccount:
+          path = scholarship!.bankaccountURL;
+          data = scholarship!.bankaccountName;
+          break;
+        default:
+          throw Exception('Invalid UrlFileType');
+      }
+
+      if (data != null && path != null) {
+        return await storageService.getFileURL(path: path, data: data);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      throw Exception('Error fetching file url: $e');
+    }
+  }
+
+  Future<Map<String, String>?> getURLFilePathAndData({required UrlFileType fileType, required StorageService storageService}) async {
+    try {
+      String? path;
+      String? data;
+      switch (fileType) {
+        case UrlFileType.matriculaURL:
+          path = scholarship!.matriculaURL;
+          data = scholarship!.matriculaURLName;
+          break;
+        case UrlFileType.horarioURL:
+          path = scholarship!.horarioURL;
+          data = scholarship!.horarioURLName;
+          break;
+        case UrlFileType.soporteURL:
+          path = scholarship!.soporteURL;
+          data = scholarship!.soporteURLName;
+          break;
+        case UrlFileType.bankaccount:
+          path = scholarship!.bankaccountURL;
+          data = scholarship!.bankaccountName;
+          break;
+        default:
+          throw Exception('Invalid UrlFileType');
+      }
+
+      if (data != null && path != null) {
+        //map of path and data
+        return {'path': path, 'data': data};
+      } else {
+        return null;
+      }
+    } catch (e) {
+      throw Exception('Error fetching file url: $e');
+    }
+  }
+
+  Future<String?> getURLFileData({required UrlFileType fileType, required StorageService storageService}) async {
+    try {
+      String? data;
+      switch (fileType) {
+        case UrlFileType.matriculaURL:
+          data = scholarship!.matriculaURLName;
+          break;
+        case UrlFileType.horarioURL:
+          data = scholarship!.horarioURLName;
+          break;
+        case UrlFileType.soporteURL:
+          data = scholarship!.soporteURLName;
+          break;
+        case UrlFileType.bankaccount:
+          data = scholarship!.bankaccountName;
+          break;
+        default:
+          throw Exception('Invalid UrlFileType');
+      }
+
+      if (data != null) {
+        return data;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      throw Exception('Error fetching file url: $e');
+    }
+  }
+
   Future pickURLFileType() async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(

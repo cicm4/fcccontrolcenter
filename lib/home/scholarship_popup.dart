@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:download/download.dart';
+import 'package:fcccontrolcenter/services/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:fcccontrolcenter/services/scholarship_service.dart';
 import 'package:fcccontrolcenter/services/storage_service.dart';
@@ -12,6 +14,7 @@ class ScholarshipPopup extends StatefulWidget {
   final Future<void> Function(String) downloadFile;
   final ScholarshipService scholarshipService;
   final StorageService storageService;
+  final String name;
 
   const ScholarshipPopup({
     Key? key,
@@ -19,7 +22,9 @@ class ScholarshipPopup extends StatefulWidget {
     required this.removeFile,
     required this.downloadFile,
     required this.scholarshipService,
-    required this.storageService,
+    required this.storageService, 
+    required this.name,
+
   }) : super(key: key);
 
   @override
@@ -30,7 +35,7 @@ class _ScholarshipPopupState extends State<ScholarshipPopup> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Información de Beca para ${widget.scholarshipData['uid']}'),
+      title: Text('Información de Beca para ${widget.name}'),
       content: SingleChildScrollView(
         child: ListBody(
           children: <Widget>[
@@ -46,8 +51,11 @@ class _ScholarshipPopupState extends State<ScholarshipPopup> {
             const SizedBox(height: 10),
             _buildFileItem(
                 'Liquidación de Matrícula', UrlFileType.matriculaURL),
+                const SizedBox(height: 10),
             _buildFileItem('Horario', UrlFileType.horarioURL),
+            const SizedBox(height: 10),
             _buildFileItem('Soporte de Pago', UrlFileType.soporteURL),
+            const SizedBox(height: 10),
           ],
         ),
       ),
