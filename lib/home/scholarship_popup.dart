@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'package:download/download.dart';
-import 'package:fcccontrolcenter/services/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:fcccontrolcenter/services/scholarship_service.dart';
 import 'package:fcccontrolcenter/services/storage_service.dart';

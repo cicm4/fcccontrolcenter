@@ -131,7 +131,9 @@ class StorageService {
       final url = await st.ref().child('$path/$data').getDownloadURL();
       return url;
     } catch (e) {
-      print('Error getting file URL: $e');
+      if (kDebugMode) {
+        print('Error getting file URL: $e');
+      }
       return null;
     }
   }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class CreateUserButton extends StatelessWidget {
+  const CreateUserButton({super.key});
+
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(

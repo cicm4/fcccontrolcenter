@@ -1,14 +1,11 @@
-import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:download/download.dart';
 import 'package:fcccontrolcenter/services/database_service.dart';
 import 'package:fcccontrolcenter/services/scholarship_service.dart';
 import 'package:fcccontrolcenter/services/storage_service.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fcccontrolcenter/services/auth_service.dart';
 import 'package:fcccontrolcenter/services/db_user_service.dart';
-import 'package:http/http.dart';
 import 'package:path_provider/path_provider.dart';
 import 'home_table.dart';
 import 'create_user_button.dart';
@@ -237,7 +234,9 @@ class _HomeState extends State<Home> {
               storageService: widget.st,
             );
 
-            print(fileDataUrl);
+            if (kDebugMode) {
+              print(fileDataUrl);
+            }
             
             if (fileDataUrl != null && fileDataName != null) {
               final downloadDir = await getDownloadsDirectory();
