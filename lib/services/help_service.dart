@@ -1,8 +1,9 @@
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:fcccontrolcenter/data/help.dart';
 import 'package:fcccontrolcenter/services/database_service.dart';
 import 'package:fcccontrolcenter/services/storage_service.dart';
-import 'package:fcccontrolcenter/services/user_service.dart';
 import 'package:flutter/foundation.dart';
 
 class HelpService {
@@ -11,7 +12,7 @@ class HelpService {
   /// This function retrieves all help requests from the 'helps' collection
   /// in Firestore. It returns a list of `HelpVar` objects representing each help request.
   static Future<List<HelpVar>?> getAllHelps({
-    required DBService dbService, required UserService userService,
+    required DBService dbService,
   }) async {
     try {
       List<Map<String, dynamic>>? helpDataList =
@@ -66,20 +67,28 @@ class HelpService {
     }
   }
 
-  /// Downloads the attached file of a help request to the user's device.
+  /// Downloads the attached file of a help request and returns it as Uint8List.
   ///
-  /// This function downloads a file from Firebase Storage to the user's device.
-  static Future<void> downloadFile({
+  /// This function downloads a file from Firebase Storage to the user's device
+  /// and returns the file data for preview.
+  static Future<Uint8List?> downloadFile({
     required String url,
     required String savePath,
   }) async {
     try {
-      final uri = Uri.parse(url);
-      await Dio().downloadUri(uri, savePath);
+      final response = await Dio().get(
+        url,
+        options: Options(responseType: ResponseType.bytes),
+      );
+      final file = File(savePath);
+      await file.writeAsBytes(response.data);
+
+      return response.data;
     } catch (e) {
       if (kDebugMode) {
         print('Error downloading file: $e');
       }
+      return null;
     }
   }
 }

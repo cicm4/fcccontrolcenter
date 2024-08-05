@@ -1,10 +1,13 @@
 import 'package:fcccontrolcenter/data/help.dart';
-import 'package:fcccontrolcenter/services/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:fcccontrolcenter/services/database_service.dart';
 import 'package:fcccontrolcenter/services/storage_service.dart';
 import 'package:fcccontrolcenter/services/help_service.dart';
+import 'package:mime/mime.dart';
+import 'package:pdfx/pdfx.dart';
+import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
 class AyudasPopup extends StatefulWidget {
   final DBService dbService;
@@ -36,28 +39,30 @@ class _AyudasPopupState extends State<AyudasPopup>
 
   /// Fetches all helps from the database and initializes the lists.
   Future<void> _fetchHelps() async {
-    final allHelps = await HelpService.getAllHelps(
-      dbService: widget.dbService, userService: UserService(),
-    );
-    setState(() {
-      helps = allHelps ?? []; // Initialize helps list
-      filteredHelps = helps; // Initialize filteredHelps with helps
-    });
+    try {
+      final allHelps = await HelpService.getAllHelps(
+        dbService: widget.dbService,
+      );
+      setState(() {
+        helps = allHelps ?? []; // Initialize helps list
+        filteredHelps = helps; // Initialize filteredHelps with helps
+      });
+    } catch (e) {
+      print('Error fetching helps: $e');
+    }
   }
 
   /// Filters helps based on the search query.
   void _filterHelps(String query) {
-    if (query.isEmpty) {
-      setState(() {
+    setState(() {
+      if (query.isEmpty) {
         filteredHelps = helps;
-      });
-    } else {
-      setState(() {
+      } else {
         filteredHelps = helps
             .where((help) => help.id != null && help.id!.contains(query))
             .toList();
-      });
-    }
+      }
+    });
   }
 
   /// Updates the status of a help request.
@@ -68,32 +73,55 @@ class _AyudasPopupState extends State<AyudasPopup>
         helpId: id,
         newStatus: status,
       );
-      _fetchHelps();
     } catch (e) {
       print('Error updating help status: $e');
     }
   }
 
-  /// Downloads the attached file of a help request.
-  Future<void> _downloadFile(String fileName, String helpId) async {
-    final fileUrl = await HelpService.getFileDownloadURL(
-      storageService: widget.storageService,
-      helpId: helpId,
-      fileName: fileName,
-    );
+  /// Retrieves the file from storage and returns the file data.
+  Future<Uint8List?> _getFileData(String? fileName) async {
+    if (fileName == null) {
+      print('File name is null');
+      return null;
+    }
 
-    if (fileUrl != null) {
-      final downloadDir = await getDownloadsDirectory();
-      if (downloadDir != null) {
-        final savePath = '${downloadDir.path}/$fileName';
+    try {
+      final fileData = await widget.storageService.getFileFromST(
+        path: 'helps',
+        data: fileName,
+      );
+      return fileData;
+    } catch (e) {
+      print('Error retrieving file data: $e');
+      return null;
+    }
+  }
 
-        await HelpService.downloadFile(url: fileUrl, savePath: savePath);
-      }
+  /// Downloads the file to the local storage.
+  Future<void> _downloadFile(String fileName, Uint8List fileData) async {
+    final directory = await getApplicationDocumentsDirectory();
+    final file = File('${directory.path}/$fileName');
+
+    try {
+      await file.writeAsBytes(fileData);
+      print('File saved at ${file.path}');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Archivo descargado en ${file.path}')),
+      );
+    } catch (e) {
+      print('Error saving file: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error al descargar el archivo')),
+      );
     }
   }
 
   /// Displays detailed information about a help request.
-  void _showHelpDetails(HelpVar help) {
+  void _showHelpDetails(HelpVar help) async {
+    final fileData = await _getFileData(help.file);
+    final mimeType = lookupMimeType(help.file ?? '', headerBytes: fileData) ?? '';
+
+    // ignore: use_build_context_synchronously
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -103,49 +131,95 @@ class _AyudasPopupState extends State<AyudasPopup>
             child: ListBody(
               children: <Widget>[
                 Text('Email: ${help.email ?? "N/A"}'),
-                Text('Tipo de Ayuda: ${help.helpType ?? "N/A"}'),
+                Text('Tipo de Ayuda: ${help.helpType?.displayName ?? "N/A"}'),
                 Text('Mensaje: ${help.message ?? "N/A"}'),
                 Text('Fecha: ${help.time ?? "N/A"}'),
-                ElevatedButton(
-                  onPressed: () {
-                    if (help.id != null) {
-                      _downloadFile('${help.id}.pdf', help.id!);
-                    }
-                  },
-                  child: const Text('Descargar Archivo Adjunto'),
-                ),
+                const SizedBox(height: 10),
+                _buildFilePreview(mimeType, fileData),
               ],
             ),
           ),
           actions: <Widget>[
+            if (fileData != null)
+              TextButton(
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white, backgroundColor: Colors.blue,
+                ),
+                child: const Text('Descargar'),
+                onPressed: () async {
+                  if (help.file != null) {
+                    await _downloadFile(help.file!, fileData);
+                  }
+                },
+              ),
             TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white, backgroundColor: Colors.green,
+              ),
               child: const Text('Aceptar'),
               onPressed: () {
                 if (help.id != null) {
                   _updateHelpStatus(help.id!, '2');
                 }
                 Navigator.of(context).pop();
+                _fetchHelps(); // Refresh list after status update
               },
             ),
             TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white, backgroundColor: Colors.red,
+              ),
               child: const Text('Rechazar'),
               onPressed: () {
                 if (help.id != null) {
                   _updateHelpStatus(help.id!, '3');
                 }
                 Navigator.of(context).pop();
+                _fetchHelps(); // Refresh list after status update
               },
             ),
             TextButton(
               child: const Text('Cerrar'),
-              onPressed: () {
-                Navigator.of(context).pop();
+              onPressed: () async {
+                // Check and update status from 0 to 1 if necessary
+                if (help.status == '0' && help.id != null) {
+                  await _updateHelpStatus(help.id!, '1').then((_) {
+                    Navigator.of(context).pop();
+                    _fetchHelps(); // Refresh list after status update
+                  });
+                } else {
+                  Navigator.of(context).pop();
+                }
               },
             ),
           ],
         );
       },
     );
+  }
+
+  /// Builds a preview for the attached file.
+  Widget _buildFilePreview(String mimeType, Uint8List? fileData) {
+    if (fileData == null) {
+      return const Text('Archivo no disponible');
+    }
+
+    if (mimeType.startsWith('image/')) {
+      return Image.memory(fileData, fit: BoxFit.contain);
+    } else if (mimeType == 'application/pdf') {
+      final pdfController = PdfController(
+        document: PdfDocument.openData(fileData),
+      );
+      return SizedBox(
+        width: 300,
+        height: 400,
+        child: PdfView(
+          controller: pdfController,
+        ),
+      );
+    } else {
+      return const Text('No se puede mostrar el archivo o no hay archivo');
+    }
   }
 
   @override
@@ -219,11 +293,8 @@ class _AyudasPopupState extends State<AyudasPopup>
 
         return ListTile(
           title: Text('ID: ${help.id ?? "N/A"}'),
-          subtitle: Text('Tipo de Ayuda: ${help.helpType ?? "N/A"}'),
+          subtitle: Text('Tipo de Ayuda: ${help.helpType?.displayName ?? "N/A"}'),
           onTap: () {
-            if (status == 0 && help.id != null) {
-              _updateHelpStatus(help.id!, '1'); // Mark as seen (In Process)
-            }
             _showHelpDetails(help);
           },
         );
