@@ -37,7 +37,6 @@ class HomeTable extends StatelessWidget {
                   DataColumn(label: Text('Telefono')),
                   DataColumn(label: Text('Ubicación')),
                   DataColumn(label: Text('Deporte')),
-                  DataColumn(label: Text('Ayudas')),
                   DataColumn(label: Text('Beca')),
                   DataColumn(label: Text('')),
                 ],

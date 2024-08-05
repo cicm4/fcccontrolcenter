@@ -1,15 +1,21 @@
+// File: home.dart (EXE)
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:path_provider/path_provider.dart';
+
+// Import necessary services and widgets
 import 'package:fcccontrolcenter/services/database_service.dart';
 import 'package:fcccontrolcenter/services/scholarship_service.dart';
 import 'package:fcccontrolcenter/services/storage_service.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:fcccontrolcenter/services/auth_service.dart';
 import 'package:fcccontrolcenter/services/db_user_service.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:fcccontrolcenter/services/user_service.dart'; // Import UserService
 import 'home_table.dart';
 import 'create_user_button.dart';
 import 'scholarship_popup.dart';
+import 'ayudas_popup.dart'; // Import AyudasPopup
 
 class Home extends StatefulWidget {
   final DBService dbs;
@@ -32,6 +38,7 @@ class _HomeState extends State<Home> {
     _fetchUsers();
   }
 
+  // Fetch all users from the database
   Future<void> _fetchUsers() async {
     final fetchedUsers = await DBUserService.getAllUsers(widget.dbs);
     setState(() {
@@ -90,13 +97,35 @@ class _HomeState extends State<Home> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CreateUserButton(),
+                const CreateUserButton(), // Button for creating new users
                 const SizedBox(width: 20),
                 ElevatedButton(
-                  onPressed: _updateUsers,
+                  onPressed: _updateUsers, // Save changes
                   style: ElevatedButton.styleFrom(),
                   child: const Text(
                     'Guardar Cambios',
+                    style: TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 20), // Add some spacing
+                ElevatedButton(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AyudasPopup(
+                          dbService: widget.dbs,
+                          storageService: widget.st,
+                        );
+                      },
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(),
+                  child: const Text(
+                    'Ayudas',
                     style: TextStyle(
                       fontFamily: 'Montserrat',
                       fontWeight: FontWeight.w600,
@@ -134,7 +163,7 @@ class _HomeState extends State<Home> {
             const SizedBox(height: 10),
             TextButton(
               onPressed: () async {
-                await AuthService.signOut();
+                await AuthService.signOut(); // Sign out functionality
               },
               child: const Text(
                 "Logout",
@@ -153,6 +182,7 @@ class _HomeState extends State<Home> {
     );
   }
 
+  // Update a single user if changes are detected
   void _updateUser(int index) async {
     if (users![index] != originalUsers![index]) {
       await DBUserService.updateUser(
@@ -163,6 +193,7 @@ class _HomeState extends State<Home> {
     });
   }
 
+  // Update all users that have changes
   Future<void> _updateUsers() async {
     for (int i = 0; i < users!.length; i++) {
       if (users![i] != originalUsers![i]) {
@@ -172,6 +203,7 @@ class _HomeState extends State<Home> {
     await _fetchUsers(); // Refresh the user list
   }
 
+  // Confirm before deleting a user
   void _deleteUser(int index) {
     showDialog(
       context: context,
@@ -183,13 +215,13 @@ class _HomeState extends State<Home> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(context).pop(); // Close dialog
               },
               child: const Text('No', style: TextStyle(color: Colors.green)),
             ),
             TextButton(
               onPressed: () async {
-                Navigator.of(context).pop();
+                Navigator.of(context).pop(); // Close dialog
                 setState(() {
                   users!.removeAt(index);
                   originalUsers!.removeAt(index);
@@ -203,6 +235,7 @@ class _HomeState extends State<Home> {
     );
   }
 
+  // Show scholarship information for a user
   void _showScholarshipInfo(int index) async {
     final user = users![index];
     final scholarshipService = await ScholarshipService.create(
@@ -218,37 +251,55 @@ class _HomeState extends State<Home> {
         return ScholarshipPopup(
           name: user['displayName'],
           scholarshipData: scholarshipData!,
-          
           removeFile: (fileType) async {
             await scholarshipService.removeFile(fileType, widget.st);
             await _fetchUsers(); // Refresh the user list
           },
           downloadFile: (fileType) async {
             final fileDataUrl = await scholarshipService.getURLFileURL(
-              fileType: UrlFileType.values.firstWhere((e) => e.toString().split('.').last == fileType),
+              fileType: UrlFileType.values.firstWhere(
+                  (e) => e.toString().split('.').last == fileType),
               storageService: widget.st,
             );
 
             final fileDataName = await scholarshipService.getURLFileData(
-              fileType: UrlFileType.values.firstWhere((e) => e.toString().split('.').last == fileType),
+              fileType: UrlFileType.values.firstWhere(
+                  (e) => e.toString().split('.').last == fileType),
               storageService: widget.st,
             );
 
             if (kDebugMode) {
               print(fileDataUrl);
             }
-            
+
             if (fileDataUrl != null && fileDataName != null) {
               final downloadDir = await getDownloadsDirectory();
-              final extensionType = fileDataName.contains('.pdf') ? '.pdf' : fileDataUrl.contains('.png') ? '.png' : fileDataUrl.contains('.jpeg') ? '.jpeg' : fileDataUrl.contains('.jpg') ? '.jpg' : '';
+              final extensionType = fileDataName.contains('.pdf')
+                  ? '.pdf'
+                  : fileDataUrl.contains('.png')
+                      ? '.png'
+                      : fileDataUrl.contains('.jpeg')
+                          ? '.jpeg'
+                          : fileDataUrl.contains('.jpg')
+                              ? '.jpg'
+                              : '';
               //name based on URL File Type where matriculaURL is matricula, horarioURL is horario, soporteURL is soporte
-              final name = fileType == 'matriculaURL' ? 'matricula' : fileType == 'horarioURL' ? 'horario' : fileType == 'soporteURL' ? 'soporte' : fileType == 'bankaccountURL' ? 'bankaccount' : '';
-              final savePath = '${downloadDir!.path}/$name${user['displayName']}$extensionType';
+              final name = fileType == 'matriculaURL'
+                  ? 'matricula'
+                  : fileType == 'horarioURL'
+                      ? 'horario'
+                      : fileType == 'soporteURL'
+                          ? 'soporte'
+                          : fileType == 'bankaccountURL'
+                              ? 'bankaccount'
+                              : '';
+              final savePath =
+                  '${downloadDir!.path}/$name${user['displayName']}$extensionType';
               final uri = Uri.parse(fileDataUrl);
 
               await Dio().downloadUri(uri, savePath);
             }
-          },  
+          },
           scholarshipService: scholarshipService,
           storageService: widget.st,
         );

@@ -90,25 +90,6 @@ class UserDataTableSource extends DataTableSource {
       ),
       DataCell(ElevatedButton(
         onPressed: () {
-          // Handle Ayudas button logic here
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF0b512d),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-        child: const Text(
-          'Ayudas',
-          style: TextStyle(
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-      )),
-      DataCell(ElevatedButton(
-        onPressed: () {
           showScholarshipInfo(index);  // Add this line
         },
         style: ElevatedButton.styleFrom(

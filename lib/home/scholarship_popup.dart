@@ -101,6 +101,7 @@ class _ScholarshipPopupState extends State<ScholarshipPopup> {
               ),
               const SizedBox(height: 5),
               _buildFilePreviewContainer(mimeType, data!),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   ElevatedButton(
