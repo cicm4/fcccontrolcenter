@@ -9,7 +9,7 @@ import 'package:flutter/widgets.dart';
 Map<String, WidgetBuilder> getAppRoutes(
     AuthService auth, DBService dbs, StorageService st) {
   return {
-    '/home': (context) => Home(dbs: dbs, st: st),
+    '/home': (context) => Home(dbs: dbs, st: st, auth: auth,),
     '/login': (context) => Login(auth: auth)
   };
 }

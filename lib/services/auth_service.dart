@@ -1,7 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fcccontrolcenter/services/admin_service.dart';
 import 'package:fcccontrolcenter/services/database_service.dart';
 import 'package:fcccontrolcenter/services/user_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 
 class AuthService {
@@ -132,55 +134,13 @@ class AuthService {
   /// If [phone], [sport], [gid], or [location] is null, the corresponding field in the user document is left empty.
   ///
   /// Throws an exception if an error occurs while adding the documents to the database.
-  Future<void> _addNewUserToDB(
-      {String? name,
-      String? phone,
-      String? sport,
-      String? gid,
-      String? location,
-      String? startDate}) async {
-    try {
-      UserService us = UserService();
-      String? uid = us.user!.uid;
-      String? email = us.user!.email;
-      String? displayName = us.user!.displayName;
-      String? photoUrl = us.user!.photoURL;
-      String? type = 'donor';
 
-      displayName ??= name;
-
-      photoUrl ??= '';
-
-      var newUser = {
-        'uid': uid,
-        'email': email,
-        'displayName': displayName,
-        'photoUrl': photoUrl,
-        'type': type,
-        'phone': phone,
-        'sport': sport,
-        'gid': gid,
-        'location': location,
-        'startDate': startDate,
-        'endDate': null
-      };
-
-      await dbs.addEntryToDBWithName(path: 'users', entry: newUser, name: uid);
-
-      await _addScholarship(uid, gid);
-    } on FirebaseAuthException catch (e) {
-      _handleFirebaseAuthException(e);
-    } catch (e) {
-      _handleGeneralException(e);
-    }
-  }
-
-  Future<void> _addScholarship(String uid, String? gid) async {
+  Future<void> _addScholarship(String uid, String? gid, DBService dbService) async {
     var scholarship = {
       'uid': uid,
       'gid': gid,
     };
-    await dbs.addEntryToDBWithName(
+    await dbService.addEntryToDBWithName(
         path: 'scholarships', entry: scholarship, name: uid);
   }
   /// Check if a user is in the database.
@@ -239,21 +199,49 @@ class AuthService {
       required location,
       required startDate}) async {
     // Register with email and password
+    FirebaseApp app = await Firebase.initializeApp(
+        name: 'FCCApp', options: Firebase.app().options);
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: emailAddress,
-        password: password,
-      );
+      UserCredential userCredential = await FirebaseAuth.instanceFor(app: app)
+        .createUserWithEmailAndPassword(email: emailAddress, password: password);
       // Add the new user to the database
-      await _addNewUserToDB(
-          name: name, phone: phone, sport: sport, gid: gid, location: location, startDate: startDate);
+
+      String? uid = FirebaseAuth.instanceFor(app: app).currentUser!.uid;
+      String? email = FirebaseAuth.instanceFor(app: app).currentUser?.email;
+      String? photoUrl = FirebaseAuth.instanceFor(app: app).currentUser?.photoURL;
+      String? type = 'donor';
+      photoUrl ??= '';
+
+      var newUser = {
+        'uid': uid,
+        'email': email,
+        'displayName': name,
+        'photoUrl': photoUrl,
+        'type': type,
+        'phone': phone,
+        'sport': sport,
+        'gid': gid,
+        'location': location,
+        'startDate': startDate,
+        'endDate': null
+      };
+
+      DBService dbs2 = DBService.withDB(FirebaseFirestore.instanceFor(app: app));
+
+      await dbs2.addEntryToDBWithName(path: 'users', entry: newUser, name: uid);
+
+      await _addScholarship(uid, gid, dbs2);
+
+      await app.delete();
 
       // If the user is successfully registered, return 'Success'
       return 'Success';
     } on FirebaseAuthException catch (e) {
+      await app.delete();
       // Handle FirebaseAuthExceptions
       return _handleFirebaseAuthException(e);
     } catch (e) {
+      await app.delete();
       // Handle any other exceptions
       return _handleGeneralException(e);
     }

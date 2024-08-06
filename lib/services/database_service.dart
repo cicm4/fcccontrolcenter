@@ -7,7 +7,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
 class DBService {
-  FirebaseFirestore db = FirebaseFirestore.instance;
+  FirebaseFirestore db;
+
+  //2 constructors, one with a specific database instance and one without
+
+  DBService() : db = FirebaseFirestore.instance;
+
+  DBService.withDB(this.db);
+  
+  
+  
 
   // will have 4 basic functions:
   // add data to DB

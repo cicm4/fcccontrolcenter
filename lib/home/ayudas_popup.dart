@@ -1,11 +1,11 @@
 import 'package:fcccontrolcenter/data/help.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fcccontrolcenter/services/database_service.dart';
 import 'package:fcccontrolcenter/services/storage_service.dart';
 import 'package:fcccontrolcenter/services/help_service.dart';
 import 'package:mime/mime.dart';
 import 'package:pdfx/pdfx.dart';
-import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 
@@ -20,6 +20,7 @@ class AyudasPopup extends StatefulWidget {
   }) : super(key: key);
 
   @override
+  // ignore: library_private_types_in_public_api
   _AyudasPopupState createState() => _AyudasPopupState();
 }
 
@@ -48,7 +49,9 @@ class _AyudasPopupState extends State<AyudasPopup>
         filteredHelps = helps; // Initialize filteredHelps with helps
       });
     } catch (e) {
-      print('Error fetching helps: $e');
+      if (kDebugMode) {
+        print('Error fetching helps: $e');
+      }
     }
   }
 
@@ -74,14 +77,18 @@ class _AyudasPopupState extends State<AyudasPopup>
         newStatus: status,
       );
     } catch (e) {
-      print('Error updating help status: $e');
+      if (kDebugMode) {
+        print('Error updating help status: $e');
+      }
     }
   }
 
   /// Retrieves the file from storage and returns the file data.
   Future<Uint8List?> _getFileData(String? fileName) async {
     if (fileName == null) {
-      print('File name is null');
+      if (kDebugMode) {
+        print('File name is null');
+      }
       return null;
     }
 
@@ -92,7 +99,9 @@ class _AyudasPopupState extends State<AyudasPopup>
       );
       return fileData;
     } catch (e) {
-      print('Error retrieving file data: $e');
+      if (kDebugMode) {
+        print('Error retrieving file data: $e');
+      }
       return null;
     }
   }
@@ -104,12 +113,18 @@ class _AyudasPopupState extends State<AyudasPopup>
 
     try {
       await file.writeAsBytes(fileData);
-      print('File saved at ${file.path}');
+      if (kDebugMode) {
+        print('File saved at ${file.path}');
+      }
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Archivo descargado en ${file.path}')),
       );
     } catch (e) {
-      print('Error saving file: $e');
+      if (kDebugMode) {
+        print('Error saving file: $e');
+      }
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error al descargar el archivo')),
       );

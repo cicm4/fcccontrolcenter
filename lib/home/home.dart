@@ -1,5 +1,3 @@
-// File: home.dart (EXE)
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
@@ -11,7 +9,6 @@ import 'package:fcccontrolcenter/services/scholarship_service.dart';
 import 'package:fcccontrolcenter/services/storage_service.dart';
 import 'package:fcccontrolcenter/services/auth_service.dart';
 import 'package:fcccontrolcenter/services/db_user_service.dart';
-import 'package:fcccontrolcenter/services/user_service.dart'; // Import UserService
 import 'home_table.dart';
 import 'create_user_button.dart';
 import 'scholarship_popup.dart';
@@ -20,10 +17,17 @@ import 'ayudas_popup.dart'; // Import AyudasPopup
 class Home extends StatefulWidget {
   final DBService dbs;
   final StorageService st;
+  final AuthService auth;
 
-  const Home({super.key, required this.dbs, required this.st});
+  const Home({
+    super.key,
+    required this.dbs,
+    required this.st,
+    required this.auth,
+  });
 
   @override
+  // ignore: library_private_types_in_public_api
   _HomeState createState() => _HomeState();
 }
 
@@ -35,7 +39,7 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
-    _fetchUsers();
+    _fetchUsers(); // Initial fetch
   }
 
   // Fetch all users from the database
@@ -43,8 +47,13 @@ class _HomeState extends State<Home> {
     final fetchedUsers = await DBUserService.getAllUsers(widget.dbs);
     setState(() {
       users = fetchedUsers;
-      originalUsers = List.from(fetchedUsers!);
+      originalUsers = List.from(fetchedUsers!); // Clone the list to track changes
     });
+  }
+
+  // Method to refresh the user table
+  void refreshUserTable() {
+    _fetchUsers();
   }
 
   @override
@@ -97,7 +106,10 @@ class _HomeState extends State<Home> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const CreateUserButton(), // Button for creating new users
+                CreateUserButton(
+                  authService: widget.auth,
+                  refreshUserTable: refreshUserTable, // Pass the refresh function
+                ), // Button for creating new users
                 const SizedBox(width: 20),
                 ElevatedButton(
                   onPressed: _updateUsers, // Save changes
