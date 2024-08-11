@@ -150,11 +150,11 @@ class CreateUserButton extends StatelessWidget {
                 );
 
                 if (result == 'Success') {
+                  await refreshUserTable();
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Usuario creado exitosamente')),
-                  );
-                  refreshUserTable(); // Reload the user table
+                  ); // Reload the user table
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Error: $result')),

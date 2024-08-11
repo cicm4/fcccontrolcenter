@@ -52,8 +52,9 @@ class _HomeState extends State<Home> {
   }
 
   // Method to refresh the user table
-  void refreshUserTable() {
-    _fetchUsers();
+  Future<void> refreshUserTable() async {
+    Navigator.of(context).pop();
+    Navigator.of(context).popAndPushNamed('/home');
   }
 
   @override
@@ -233,11 +234,9 @@ class _HomeState extends State<Home> {
             ),
             TextButton(
               onPressed: () async {
-                Navigator.of(context).pop(); // Close dialog
-                setState(() {
-                  users!.removeAt(index);
-                  originalUsers!.removeAt(index);
-                });
+                DBUserService.removeUser(widget.dbs, users![index]['uid']);
+                Navigator.of(context).pop();
+                Navigator.of(context).popAndPushNamed('/home');
               },
               child: const Text('Seguro', style: TextStyle(color: Colors.red)),
             ),

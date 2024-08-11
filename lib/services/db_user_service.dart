@@ -68,4 +68,16 @@ class DBUserService {
       }
     }
   }
+
+  static Future<void> removeUser(DBService dbs, String uid) async {
+    //remove user from the database
+    try {
+      await dbs.deleteInDB(path: 'users', data: uid);
+    } catch (e) {
+      if (kDebugMode) {
+        print(e.toString());
+        throw Exception('Error deleting user: $e');
+      }
+    }
+  }
 }
