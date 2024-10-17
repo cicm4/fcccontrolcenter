@@ -1,180 +1,182 @@
-//This class is a general database serivice class
-//It will NOT use any other service class, and will NOT have any specific functionality
-//It will only have methods that are used to interact with the database
-//Methods such as "saveNewPhotoToDB" would not be part of this class as that is NOT a general database service
+// Esta clase es un servicio general de base de datos.
+// NO utilizará ninguna otra clase de servicio y NO tendrá ninguna funcionalidad específica.
+// Solo contendrá métodos que interactúan directamente con la base de datos.
+// Métodos específicos, como "saveNewPhotoToDB", NO forman parte de esta clase, ya que no es un servicio de base de datos especializado.
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
+/// `DBService`: Clase de servicio general para interactuar con Firestore.
+/// Provee métodos para realizar las operaciones básicas de la base de datos.
 class DBService {
   FirebaseFirestore db;
 
-  //2 constructors, one with a specific database instance and one without
-
+  /// Constructor sin parámetros que inicializa una instancia de Firestore.
   DBService() : db = FirebaseFirestore.instance;
 
+  /// Constructor con una instancia de Firestore personalizada.
   DBService.withDB(this.db);
-  
-  
-  
 
-  // will have 4 basic functions:
-  // add data to DB
-  // delete data from DB
-  // fetch data from DB
-  // confirm existance of data in DB
+  // La clase ofrece 4 funciones básicas:
+  // 1. Agregar datos a la base de datos.
+  // 2. Eliminar datos de la base de datos.
+  // 3. Obtener datos de la base de datos.
+  // 4. Confirmar la existencia de datos en la base de datos.
 
-  /// Checks if a specific document exists in the database.
+  /// Verifica si un documento específico existe en la base de datos.
   ///
-  /// This function checks if a specific document exists in a specified path in the database.
-  /// It requires a path and data as parameters. The data parameter is expected to be the name of the document in the database.
+  /// Esta función verifica si un documento específico existe en la base de datos en una ruta especificada.
+  /// Requiere un nombre de documento y una ruta como parámetros.
   ///
-  /// @param data The name of the document to check for in the database.
-  /// @param path The path in the database where the document is expected to be.
+  /// @param data El nombre del documento que se va a verificar en la base de datos.
+  /// @param path La ruta en la base de datos donde se espera que esté el documento.
   ///
-  /// @return A Future that completes with a boolean. Returns true if the document exists, false otherwise.
+  /// @return Un `Future` que se completa con un booleano. Devuelve `true` si el documento existe, `false` de lo contrario.
   Future<bool> isDataInDB({required data, required String path}) async {
     try {
-      // Check if data is not null
+      // Verifica si los datos no son nulos
       if (data != null) {
-        // Fetch the document from the database
+        // Obtiene el documento desde la base de datos
         final doc = await getFromDB(path: path, data: data);
 
-        // If the document exists, return true
+        // Si el documento existe, devuelve `true`
         if (doc != null) {
           return true;
         }
       } else {
-        // If data is null, return false
+        // Si los datos son nulos, devuelve `false`
         return false;
       }
     } catch (e) {
-      // If an error occurs, print the error if in debug mode and return false
+      // Si ocurre un error, imprime el error si está en modo depuración y devuelve `false`
       if (kDebugMode) {
         print(e);
       }
     }
-    // If data is not found or an error occurs, return false
+    // Si los datos no se encuentran o ocurre un error, devuelve `false`
     return false;
   }
 
-  /// Fetches data from the database.
+  /// Obtiene datos de la base de datos.
   ///
-  /// This function retrieves data from a specified path in the database.
-  /// It requires a path and data as parameters.
+  /// Esta función recupera datos de una ruta especificada en la base de datos.
+  /// Requiere una ruta y un nombre de documento como parámetros.
   ///
-  /// @param path The path in the database from where data is to be retrieved.
-  /// @param data The specific document to be retrieved from the database.
+  /// @param path La ruta en la base de datos de donde se van a recuperar los datos.
+  /// @param data El documento específico que se va a recuperar de la base de datos.
   ///
-  /// @return A Future that completes with a Map containing the data if it is found,
-  /// or null if an error occurs or the data is not found.
+  /// @return Un `Future` que se completa con un `Map` que contiene los datos, o `null` si ocurre un error o no se encuentran los datos.
   Future<Map<String, dynamic>?> getFromDB(
       {required String path, required String data}) async {
     try {
-      // Fetch the document from the database
+      // Recupera el documento de la base de datos
       final doc = await db.collection(path).doc(data).get();
-      
 
-      // Return the data of the document
+      // Devuelve los datos del documento
       return doc.data();
     } catch (e) {
-
-      // If in debug mode, print the error
+      // Si está en modo depuración, imprime el error
       if (kDebugMode) {
         print(e.toString());
-        throw Exception('Error getting data: $e, path: $path, data: $data');
+        throw Exception('Error al obtener datos: $e, ruta: $path, datos: $data');
       }
     }
-    // If an error occurs, return null
+    // Si ocurre un error, devuelve `null`
     return null;
   }
 
-/// Adds an entry to the database.
-///
-/// This function attempts to add a new entry to a specified path in the database.
-/// It requires a path and an entry as parameters. The entry parameter is expected to be a map of key-value pairs representing the document fields.
-///
-/// @param path The path in the database where the new entry will be added.
-/// @param entry A map of key-value pairs representing the document fields.
-///
-/// @return A Future that completes with a boolean. Returns true if the entry is successfully added, false otherwise.
-Future<bool> addEntryToDB(
+  /// Agrega una entrada a la base de datos.
+  ///
+  /// Esta función intenta agregar una nueva entrada en una ruta especificada en la base de datos.
+  /// Requiere una ruta y una entrada como parámetros. La entrada debe ser un `Map` que represente los campos del documento.
+  ///
+  /// @param path La ruta en la base de datos donde se agregará la nueva entrada.
+  /// @param entry Un `Map` que representa los campos del documento.
+  ///
+  /// @return Un `Future` que se completa con un booleano. Devuelve `true` si la entrada se agrega exitosamente, `false` de lo contrario.
+  Future<bool> addEntryToDB(
       {required String path,
-      required Map<String, dynamic> entry,}) async {
+      required Map<String, dynamic> entry}) async {
     try {
-      // Add the new document to the database
+      // Agrega el nuevo documento a la base de datos
       await db.collection(path).add(entry);
-      // If the document is successfully added, return true
+      // Si el documento se agrega correctamente, devuelve `true`
       return true;
     } catch (e) {
-      // If an error occurs, print the error if in debug mode
+      // Si ocurre un error, imprime el error si está en modo depuración
       if (kDebugMode) {
         print(e.toString());
       }
     }
-    // If an error occurs, return false
+    // Si ocurre un error, devuelve `false`
     return false;
   }
 
-/// Adds an entry to the database with a specific name.
-///
-/// This function attempts to add a new entry with a specific name to a specified path in the database.
-/// It requires a path, an entry, and a name as parameters. The entry parameter is expected to be a map of key-value pairs representing the document fields.
-/// The name parameter is used as the document ID for the new entry.
-///
-/// This function is similar to `addEntryToDB`, but it allows you to specify the document ID instead of having it automatically generated.
-///
-/// @param path The path in the database where the new entry will be added.
-/// @param entry A map of key-value pairs representing the document fields.
-/// @param name The document ID for the new entry.
-///
-/// @return A Future that completes with a boolean. Returns true if the entry is successfully added, false otherwise.
-Future<bool> addEntryToDBWithName(
+  /// Agrega una entrada a la base de datos con un nombre específico.
+  ///
+  /// Esta función intenta agregar una nueva entrada con un nombre específico en una ruta especificada.
+  /// Es similar a `addEntryToDB`, pero permite especificar el ID del documento en lugar de generarlo automáticamente.
+  ///
+  /// @param path La ruta en la base de datos donde se agregará la nueva entrada.
+  /// @param entry Un `Map` que representa los campos del documento.
+  /// @param name El ID del documento.
+  ///
+  /// @return Un `Future` que se completa con un booleano. Devuelve `true` si la entrada se agrega exitosamente, `false` de lo contrario.
+  Future<bool> addEntryToDBWithName(
       {required String path,
       required Map<String, dynamic> entry,
       required String name}) async {
     try {
-      // Add the new document to the database with the specified name as the document ID
+      // Agrega el nuevo documento a la base de datos con el nombre especificado como ID
       await db.collection(path).doc(name).set(entry);
-      // If the document is successfully added, return true
+      // Si el documento se agrega correctamente, devuelve `true`
       return true;
     } catch (e) {
-      // If an error occurs, print the error if in debug mode
+      // Si ocurre un error, imprime el error si está en modo depuración
       if (kDebugMode) {
         print(e.toString());
       }
     }
-    // If an error occurs, return false
+    // Si ocurre un error, devuelve `false`
     return false;
   }
 
-  /// Deletes a document from the database.
+  /// Elimina un documento de la base de datos.
   ///
-  /// This function attempts to delete a document from a specified path in the database.
-  /// It requires a path and data as parameters. The data parameter is expected to be the name of the document.
+  /// Esta función intenta eliminar un documento de una ruta especificada en la base de datos.
+  /// Requiere una ruta y un nombre de documento como parámetros.
   ///
-  /// @param path The path in the database where the document is located.
-  /// @param data The name of the document to be deleted.
+  /// @param path La ruta en la base de datos donde se encuentra el documento.
+  /// @param data El nombre del documento que se va a eliminar.
   ///
-  /// @return A Future that completes with a boolean. Returns true if the document is successfully deleted, false otherwise.
+  /// @return Un `Future` que se completa con un booleano. Devuelve `true` si el documento se elimina exitosamente, `false` de lo contrario.
   Future<bool> deleteInDB({required String path, required String data}) async {
     try {
-      // Attempt to delete the document from the database
+      // Intenta eliminar el documento de la base de datos
       await db.collection(path).doc(data).delete();
-      // If the document is successfully deleted, return true
+      // Si el documento se elimina correctamente, devuelve `true`
       return true;
     } catch (e) {
-      // If an error occurs, print the error if in debug mode
+      // Si ocurre un error, imprime el error si está en modo depuración
       if (kDebugMode) {
         print(e.toString());
       }
     }
-    // If an error occurs or the document is not found, return false
+    // Si ocurre un error o el documento no se encuentra, devuelve `false`
     return false;
   }
 
-
-  Future<List<Map<String, dynamic>>?> getListWithVariableFromDB({required String path, required String variable, required String value}) async {
+  /// Obtiene una lista de documentos que coinciden con una variable en la base de datos.
+  ///
+  /// Esta función recupera una lista de documentos de una ruta específica donde un campo coincide con un valor determinado.
+  ///
+  /// @param path La ruta en la base de datos.
+  /// @param variable El campo que se va a filtrar.
+  /// @param value El valor que debe coincidir.
+  ///
+  /// @return Un `Future` que se completa con una lista de mapas. Cada mapa representa los datos de un documento.
+  Future<List<Map<String, dynamic>>?> getListWithVariableFromDB(
+      {required String path, required String variable, required String value}) async {
     try {
       List<Map<String, dynamic>> list = [];
       QuerySnapshot querySnapshot = await db.collection(path).where(variable, isEqualTo: value).get();
@@ -185,31 +187,20 @@ Future<bool> addEntryToDBWithName(
     } catch (e) {
       if (kDebugMode) {
         print(e.toString());
-        throw Exception('Error getting list: $e');
+        throw Exception('Error al obtener la lista: $e');
       }
     }
     return null;
   }
 
-/// Retrieves all documents from a specified collection in the database.
-///
-/// This method fetches all documents from a given path (collection) in the database and returns them as a list of maps. Each map represents the data of a single document within the collection.
-///
-/// @param path The path of the collection from which documents are to be retrieved.
-///
-/// @return A Future that completes with a list of maps, where each map contains the data of a single document. If an error occurs during the fetch, or if the collection is empty, the method may return null or an empty list.
-///
-/// Usage example:
-/// ```dart
-/// DBService dbService = DBService();
-/// dbService.getCollection(path: 'users').then((List<Map<String, dynamic>>? users) {
-///   if (users != null) {
-///     for (var user in users) {
-///       print(user);
-///     }
-///   }
-/// });
-/// ```
+  /// Recupera todos los documentos de una colección especificada en la base de datos.
+  ///
+  /// Este método obtiene todos los documentos de una ruta dada (colección) en la base de datos y los devuelve como una lista de mapas.
+  /// Cada mapa representa los datos de un documento dentro de la colección.
+  ///
+  /// @param path La ruta de la colección de la cual se recuperarán los documentos.
+  ///
+  /// @return Un `Future` que se completa con una lista de mapas. Si ocurre un error o la colección está vacía, puede devolver `null` o una lista vacía.
   Future<List<Map<String, dynamic>>?> getCollection({required String path}) async {
     try {
       return await db.collection(path).get().then((QuerySnapshot querySnapshot) {
@@ -222,38 +213,31 @@ Future<bool> addEntryToDBWithName(
     } catch (e) {
       if (kDebugMode) {
         print(e.toString());
-        throw Exception('Error getting collection: $e');
+        throw Exception('Error al obtener la colección: $e');
       }
     }
     return null;
   }
 
-  /// Updates a document in the database.
-  /// 
-  /// This function attempts to update a document in the database at a specified path.
-  /// It requires a path and data as parameters. The data parameter is expected to be a map of key-value pairs representing the fields to be updated.
-  /// 
-  /// @param path The path in the database where the document is located.
-  /// @param data A map of key-value pairs representing the fields to be updated.
-  /// 
-  /// @return A Future that completes with no return value. If an error occurs during the update, the method may throw an exception if in debug mode.
+  /// Actualiza un documento en la base de datos.
   ///
-  /// Usage example:
-  /// ```dart
-  /// DBService dbService = DBService();
-  /// dbService.updateDocument(path: 'users/123', data: {'name': 'John Doe', 'age': 30}).then((_) {
-  ///  print('Document updated successfully');
-  /// });
-  /// ```
-  Future<void> updateDocument({required String path, required Map<String, dynamic> data}) async {
+  /// Esta función intenta actualizar un documento en la base de datos en una ruta especificada.
+  /// Requiere una ruta y un `Map` con los campos a actualizar.
+  ///
+  /// @param path La ruta en la base de datos donde se encuentra el documento.
+  /// @param data Un `Map` que representa los campos que se van a actualizar.
+  ///
+  /// @return Un `Future` que se completa sin valor de retorno. Si ocurre un error durante la actualización, el método puede lanzar una excepción si está en modo depuración.
+  Future<void> updateDocument(
+      {required String path, required Map<String, dynamic> data}) async {
     try {
       await db.doc(path).update(data);
     } catch (e) {
       if (kDebugMode) {
         print(e.toString());
-        throw Exception('Error updating document: $e');
+        throw Exception('Error al actualizar el documento: $e');
       }
     }
   }
-  //end of class
+  // fin de la clase
 }

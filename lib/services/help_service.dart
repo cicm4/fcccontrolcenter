@@ -5,11 +5,15 @@ import 'package:fcccontrolcenter/services/database_service.dart';
 import 'package:fcccontrolcenter/services/storage_service.dart';
 import 'package:flutter/foundation.dart';
 
+/// `HelpService` proporciona métodos para manejar las solicitudes de ayuda.
+///
+/// Estos métodos permiten realizar operaciones CRUD sobre las solicitudes de ayuda
+/// en la base de datos y también manejar archivos asociados.
 class HelpService {
-  /// Fetches all helps from the database.
+  /// Obtiene todas las solicitudes de ayuda de la base de datos.
   ///
-  /// This function retrieves all help requests from the 'helps' collection
-  /// in Firestore. It returns a list of `HelpVar` objects representing each help request.
+  /// Esta función recupera todas las solicitudes de ayuda de la colección 'adminNotification'
+  /// en Firestore y las convierte en una lista de objetos `HelpVar`.
   static Future<List<HelpVar>?> getAllHelps({
     required DBService dbService,
   }) async {
@@ -25,9 +29,10 @@ class HelpService {
     }
   }
 
-  /// Updates the status of a help request in the database.
+  /// Actualiza el estado de una solicitud de ayuda en la base de datos.
   ///
-  /// This function updates the status of a help request identified by `helpId`.
+  /// Utiliza `helpId` para identificar la solicitud y `newStatus` para actualizar
+  /// su estado en la colección 'adminNotification'.
   static Future<void> updateHelpStatus({
     required DBService dbService,
     required String helpId,
@@ -45,9 +50,9 @@ class HelpService {
     }
   }
 
-  /// Retrieves the download URL for the attached file of a help request.
+  /// Obtiene la URL de descarga del archivo adjunto a una solicitud de ayuda.
   ///
-  /// This function returns the download URL for a file stored in Firebase Storage.
+  /// Devuelve la URL de descarga para un archivo almacenado en Firebase Storage.
   static Future<String?> getFileDownloadURL({
     required StorageService storageService,
     required String helpId,
@@ -66,10 +71,10 @@ class HelpService {
     }
   }
 
-  /// Downloads the attached file of a help request and returns it as Uint8List.
+  /// Descarga el archivo adjunto de una solicitud de ayuda y lo guarda localmente.
   ///
-  /// This function downloads a file from Firebase Storage to the user's device
-  /// and returns the file data for preview.
+  /// Descarga un archivo desde Firebase Storage al dispositivo del usuario
+  /// y devuelve los datos del archivo (`Uint8List`) para su previsualización.
   static Future<Uint8List?> downloadFile({
     required String url,
     required String savePath,

@@ -9,18 +9,21 @@ import 'package:pdfx/pdfx.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 
+/// `AyudasPopup`: Un widget de diálogo que permite la visualización y gestión de solicitudes de ayuda.
+///
+/// Este widget permite mostrar una lista de solicitudes de ayuda desde la base de datos, filtrar las solicitudes por su estado, y ver los detalles de cada solicitud.
+/// Los detalles incluyen información como el mensaje, la fecha, y la posibilidad de descargar y visualizar archivos adjuntos.
 class AyudasPopup extends StatefulWidget {
-  final DBService dbService;
-  final StorageService storageService;
+  final DBService dbService; // Servicio de base de datos
+  final StorageService storageService; // Servicio de almacenamiento
 
   const AyudasPopup({
-    Key? key,
+    super.key,
     required this.dbService,
     required this.storageService,
-  }) : super(key: key);
+  });
 
   @override
-  // ignore: library_private_types_in_public_api
   _AyudasPopupState createState() => _AyudasPopupState();
 }
 
@@ -34,19 +37,19 @@ class _AyudasPopupState extends State<AyudasPopup>
   @override
   void initState() {
     super.initState();
-    _fetchHelps();
-    _tabController = TabController(length: 4, vsync: this);
+    _fetchHelps(); // Obtiene las solicitudes de ayuda al iniciar el widget.
+    _tabController = TabController(length: 4, vsync: this); // Configura las pestañas.
   }
 
-  /// Fetches all helps from the database and initializes the lists.
+  /// Obtiene todas las solicitudes de ayuda de la base de datos e inicializa las listas.
   Future<void> _fetchHelps() async {
     try {
       final allHelps = await HelpService.getAllHelps(
         dbService: widget.dbService,
       );
       setState(() {
-        helps = allHelps ?? []; // Initialize helps list
-        filteredHelps = helps; // Initialize filteredHelps with helps
+        helps = allHelps ?? []; // Inicializa la lista de ayudas.
+        filteredHelps = helps;  // Inicializa la lista filtrada con todas las ayudas.
       });
     } catch (e) {
       if (kDebugMode) {
@@ -55,7 +58,7 @@ class _AyudasPopupState extends State<AyudasPopup>
     }
   }
 
-  /// Filters helps based on the search query.
+  /// Filtra las ayudas en función de la consulta de búsqueda.
   void _filterHelps(String query) {
     setState(() {
       if (query.isEmpty) {
@@ -68,7 +71,7 @@ class _AyudasPopupState extends State<AyudasPopup>
     });
   }
 
-  /// Updates the status of a help request.
+  /// Actualiza el estado de una solicitud de ayuda.
   Future<void> _updateHelpStatus(String id, String status) async {
     try {
       await HelpService.updateHelpStatus(
@@ -83,7 +86,7 @@ class _AyudasPopupState extends State<AyudasPopup>
     }
   }
 
-  /// Retrieves the file from storage and returns the file data.
+  /// Obtiene los datos de un archivo desde el almacenamiento.
   Future<Uint8List?> _getFileData(String? fileName) async {
     if (fileName == null) {
       if (kDebugMode) {
@@ -106,7 +109,7 @@ class _AyudasPopupState extends State<AyudasPopup>
     }
   }
 
-  /// Downloads the file to the local storage.
+  /// Descarga un archivo al almacenamiento local.
   Future<void> _downloadFile(String fileName, Uint8List fileData) async {
     final directory = await getApplicationDocumentsDirectory();
     final file = File('${directory.path}/$fileName');
@@ -116,7 +119,6 @@ class _AyudasPopupState extends State<AyudasPopup>
       if (kDebugMode) {
         print('File saved at ${file.path}');
       }
-      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Archivo descargado en ${file.path}')),
       );
@@ -124,19 +126,17 @@ class _AyudasPopupState extends State<AyudasPopup>
       if (kDebugMode) {
         print('Error saving file: $e');
       }
-      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error al descargar el archivo')),
       );
     }
   }
 
-  /// Displays detailed information about a help request.
+  /// Muestra los detalles completos de una solicitud de ayuda.
   void _showHelpDetails(HelpVar help) async {
     final fileData = await _getFileData(help.file);
     final mimeType = lookupMimeType(help.file ?? '', headerBytes: fileData) ?? '';
 
-    // ignore: use_build_context_synchronously
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -174,10 +174,10 @@ class _AyudasPopupState extends State<AyudasPopup>
               child: const Text('Aceptar'),
               onPressed: () {
                 if (help.id != null) {
-                  _updateHelpStatus(help.id!, '2');
+                  _updateHelpStatus(help.id!, '2'); // Actualiza el estado a 'Aceptado'.
                 }
                 Navigator.of(context).pop();
-                _fetchHelps(); // Refresh list after status update
+                _fetchHelps(); // Refresca la lista después de actualizar el estado.
               },
             ),
             TextButton(
@@ -187,20 +187,19 @@ class _AyudasPopupState extends State<AyudasPopup>
               child: const Text('Rechazar'),
               onPressed: () {
                 if (help.id != null) {
-                  _updateHelpStatus(help.id!, '3');
+                  _updateHelpStatus(help.id!, '3'); // Actualiza el estado a 'Rechazado'.
                 }
                 Navigator.of(context).pop();
-                _fetchHelps(); // Refresh list after status update
+                _fetchHelps(); // Refresca la lista después de actualizar el estado.
               },
             ),
             TextButton(
               child: const Text('Cerrar'),
               onPressed: () async {
-                // Check and update status from 0 to 1 if necessary
                 if (help.status == '0' && help.id != null) {
                   await _updateHelpStatus(help.id!, '1').then((_) {
                     Navigator.of(context).pop();
-                    _fetchHelps(); // Refresh list after status update
+                    _fetchHelps(); // Refresca la lista si el estado cambia de 0 a 1.
                   });
                 } else {
                   Navigator.of(context).pop();
@@ -213,7 +212,7 @@ class _AyudasPopupState extends State<AyudasPopup>
     );
   }
 
-  /// Builds a preview for the attached file.
+  /// Construye una vista previa del archivo adjunto.
   Widget _buildFilePreview(String mimeType, Uint8List? fileData) {
     if (fileData == null) {
       return const Text('Archivo no disponible');
@@ -264,7 +263,7 @@ class _AyudasPopupState extends State<AyudasPopup>
                 onChanged: (value) {
                   setState(() {
                     _searchQuery = value;
-                    _filterHelps(value);
+                    _filterHelps(value); // Filtra las ayudas basadas en la consulta de búsqueda.
                   });
                 },
               ),
@@ -273,10 +272,10 @@ class _AyudasPopupState extends State<AyudasPopup>
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  _buildHelpList(0), // Received
-                  _buildHelpList(1), // In Process
-                  _buildHelpList(2), // Completed
-                  _buildHelpList(3), // Rejected
+                  _buildHelpList(0), // Solicitudes recibidas
+                  _buildHelpList(1), // Solicitudes en proceso
+                  _buildHelpList(2), // Solicitudes completadas
+                  _buildHelpList(3), // Solicitudes rechazadas
                 ],
               ),
             ),
@@ -286,9 +285,8 @@ class _AyudasPopupState extends State<AyudasPopup>
     );
   }
 
-  /// Builds a list of helps for a given status.
+  /// Construye una lista de ayudas según el estado dado.
   Widget _buildHelpList(int status) {
-    // Ensure filteredHelps is not null before proceeding
     if (filteredHelps.isEmpty) {
       return const Center(child: Text('No hay ayudas disponibles.'));
     }
@@ -310,7 +308,7 @@ class _AyudasPopupState extends State<AyudasPopup>
           title: Text('ID: ${help.id ?? "N/A"}'),
           subtitle: Text('Tipo de Ayuda: ${help.helpType?.displayName ?? "N/A"}'),
           onTap: () {
-            _showHelpDetails(help);
+            _showHelpDetails(help); // Muestra los detalles de la ayuda al hacer clic.
           },
         );
       },

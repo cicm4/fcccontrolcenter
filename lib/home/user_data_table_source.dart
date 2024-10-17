@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
-class UserDataTableSource extends DataTableSource {
-  final List<Map<String, dynamic>> users;
-  final Function(int) updateUser;
-  final Function(int) deleteUser;
-  final Function(int) showScholarshipInfo;  // Add this line
 
-  UserDataTableSource(this.users, this.updateUser, this.deleteUser, this.showScholarshipInfo);  // Update this line
+/// `UserDataTableSource`
+/// 
+/// Esta clase implementa una fuente de datos para una tabla de datos (`DataTable`) que muestra la información de los usuarios.
+/// Permite editar directamente la información de los usuarios desde la tabla y realizar acciones como eliminar usuarios o mostrar detalles de la beca.
+class UserDataTableSource extends DataTableSource {
+  final List<Map<String, dynamic>> users; // Lista de usuarios
+  final Function(int) updateUser; // Función para actualizar un usuario
+  final Function(int) deleteUser; // Función para eliminar un usuario
+  final Function(int) showScholarshipInfo; // Función para mostrar información de la beca
+
+  UserDataTableSource(this.users, this.updateUser, this.deleteUser, this.showScholarshipInfo);
 
   @override
   DataRow getRow(int index) {
     final user = users[index];
 
-    // Ensure that location and sport have valid initial values
+    // Asignar valores iniciales válidos a la ubicación y deporte si son incorrectos
     if (!['Medellin', 'Llanogrande'].contains(user['location'])) {
       user['location'] = 'Medellin';
     }
@@ -20,6 +25,7 @@ class UserDataTableSource extends DataTableSource {
     }
 
     return DataRow(cells: [
+      // Campo editable para el nombre del usuario
       DataCell(TextFormField(
         initialValue: user['displayName'] ?? '',
         onChanged: (value) {
@@ -30,6 +36,7 @@ class UserDataTableSource extends DataTableSource {
           fontSize: 14,
         ),
       )),
+      // Campo editable para el email del usuario
       DataCell(TextFormField(
         initialValue: user['email'] ?? '',
         onChanged: (value) {
@@ -40,6 +47,7 @@ class UserDataTableSource extends DataTableSource {
           fontSize: 14,
         ),
       )),
+      // Campo editable para la cédula del usuario
       DataCell(TextFormField(
         initialValue: user['gid'] ?? '',
         onChanged: (value) {
@@ -50,6 +58,7 @@ class UserDataTableSource extends DataTableSource {
           fontSize: 14,
         ),
       )),
+      // Campo editable para el teléfono del usuario
       DataCell(TextFormField(
         initialValue: user['phone'] ?? '',
         onChanged: (value) {
@@ -60,6 +69,7 @@ class UserDataTableSource extends DataTableSource {
           fontSize: 14,
         ),
       )),
+      // Selector para la ubicación del usuario
       DataCell(
         DropdownButtonFormField<String>(
           value: user['location'],
@@ -74,6 +84,7 @@ class UserDataTableSource extends DataTableSource {
           }).toList(),
         ),
       ),
+      // Selector para el deporte del usuario
       DataCell(
         DropdownButtonFormField<String>(
           value: user['sport'],
@@ -88,9 +99,10 @@ class UserDataTableSource extends DataTableSource {
           }).toList(),
         ),
       ),
+      // Botón para mostrar la información de la beca del usuario
       DataCell(ElevatedButton(
         onPressed: () {
-          showScholarshipInfo(index);  // Add this line
+          showScholarshipInfo(index);
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF0b512d),
@@ -107,6 +119,7 @@ class UserDataTableSource extends DataTableSource {
           ),
         ),
       )),
+      // Icono para eliminar el usuario
       DataCell(Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

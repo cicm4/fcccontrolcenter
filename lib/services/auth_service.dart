@@ -1,3 +1,4 @@
+// Importaciones necesarias para Firebase, Firestore y los servicios de la aplicación.
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fcccontrolcenter/services/admin_service.dart';
 import 'package:fcccontrolcenter/services/database_service.dart';
@@ -6,52 +7,55 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 
+/// `AuthService`: Servicio que maneja la autenticación de usuarios a través de Firebase Authentication.
+/// Se encarga de los inicios de sesión, registros y gestión de usuarios en la base de datos de Firestore.
 class AuthService {
-  ///constructor that passes a database service to limit the number of database service objects
+  /// Constructor que pasa un servicio de base de datos para evitar múltiples instancias del servicio de base de datos.
   AuthService(this.dbs);
 
-  // Stream of Firebase User to track user authentication state
-
-  //database service that is used to add new users to firestore
+  // Servicio de base de datos utilizado para agregar nuevos usuarios a Firestore.
   DBService dbs;
 
-  // Stream of authentication state changes.
+  // Instancia de FirebaseAuth para manejar el flujo de autenticación.
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
-  /// Sign in with email and password.
+  /// Iniciar sesión con correo electrónico y contraseña.
   ///
-  /// This method attempts to sign in a user using their email and password.
-  /// If the user is not found in the database, it adds them.
+  /// Este método intenta iniciar sesión usando el correo y la contraseña del usuario.
+  /// Si el usuario no existe en la base de datos, lo añade.
   ///
-  /// @param emailAddress The email address of the user.
-  /// @param password The password of the user.
+  /// @param emailAddress Dirección de correo del usuario.
+  /// @param password Contraseña del usuario.
   ///
-  /// @return A Future that completes with a boolean if the sign-in process is successful, or with an error code if an error occurs.
+  /// @return Un `Future` que se completa con un booleano si el inicio de sesión fue exitoso, o con un código de error si ocurre un error.
   Future<dynamic> signInEmailAndPass(
       {required emailAddress, required password}) async {
     try {
-      // Attempt to sign in the user using their email and password using the firebase library method
+      // Intenta iniciar sesión con el correo y la contraseña proporcionados.
       await _firebaseAuth.signInWithEmailAndPassword(
           email: emailAddress, password: password);
-      // Check if the user is in the database
+      // Verifica si el usuario está en la base de datos.
       UserService us = UserService();
 
       bool isUserInDB = await _isUserInDB(uid: us.user!.uid);
-      // If the user is not found in the database, add them
+      // Si el usuario no está en la base de datos, se intenta agregarlo.
 
       bool isUserAdmin = await AdminService.isAdmin(userService: us, dbService: dbs);
 
+      // Si el usuario no es administrador, lanza una excepción.
       if (!isUserAdmin) {
         throw FirebaseAuthException(
-            code: 'user-not-found', message: 'User not found');
+            code: 'user-not-found', message: 'Usuario no encontrado');
       }
 
+      // Si el usuario no está en la base de datos, cierra sesión y lanza una excepción.
       if (!isUserInDB) {
         AuthService.signOut();
         throw FirebaseAuthException(
-            code: 'user-not-found', message: 'User not found');
+            code: 'user-not-found', message: 'Usuario no encontrado');
       }
-      // If the sign-in process is successful, return true
+
+      // Si el inicio de sesión fue exitoso, devuelve `true`.
       return true;
     } on FirebaseAuthException catch (e) {
       _handleFirebaseAuthException(e);
@@ -60,6 +64,7 @@ class AuthService {
     }
   }
 
+  /// Maneja excepciones generales, devolviendo un mensaje amigable al usuario.
   static String _handleGeneralException(e) {
     if (kDebugMode) {
       print(e);
@@ -67,13 +72,13 @@ class AuthService {
     return 'Ocurrió un error inesperado. Por favor, intente de nuevo.';
   }
 
-  /// Handles FirebaseAuthExceptions by providing user-friendly error messages.
+  /// Maneja excepciones de FirebaseAuth proporcionando mensajes de error amigables al usuario.
   ///
-  /// @param e The FirebaseAuthException encountered during sign-in or registration.
-  /// @return A user-friendly error message based on the exception code.
+  /// @param e La excepción de FirebaseAuth encontrada durante el inicio de sesión o registro.
+  /// @return Un mensaje de error amigable al usuario basado en el código de la excepción.
   String _handleFirebaseAuthException(FirebaseAuthException e) {
     if (kDebugMode) {
-      print(e); // Only print errors in debug mode.
+      print(e); // Solo imprime los errores en modo depuración.
     }
     switch (e.code) {
       case 'user-not-found':
@@ -90,9 +95,9 @@ class AuthService {
     }
   }
 
-  /// Sign out the current user.
+  /// Cierra la sesión del usuario actual.
   ///
-  /// This method then signs out the current user from the Firebase instance.
+  /// Este método cierra la sesión del usuario actual de Firebase.
   static signOut() async {
     try {
       await FirebaseAuth.instance.signOut();
@@ -101,40 +106,34 @@ class AuthService {
     }
   }
 
-  /// Adds a new user to the database.
+  /// Agrega un nuevo usuario a la base de datos.
   ///
-  /// This method creates a new user document and a new calendar document in the database.
-  /// It also adds an entry to the 'scholarships' collection for the new user.
+  /// Este método crea un nuevo documento de usuario y un documento de calendario en la base de datos.
+  /// También agrega una entrada a la colección `scholarships` para el nuevo usuario.
   ///
-  /// The new user document is added to the 'users' collection, and the new calendar document
-  /// is added to the 'calendars' collection. The 'scholarships' entry is added to the 'scholarships' collection.
+  /// El documento del usuario contiene los siguientes campos:
+  /// * 'uid': ID único del usuario.
+  /// * 'email': Dirección de correo del usuario.
+  /// * 'displayName': Nombre mostrado del usuario.
+  /// * 'photoUrl': URL de la foto de perfil del usuario.
+  /// * 'type': Tipo de usuario (siempre 'donor').
+  /// * 'phone': Número de teléfono del usuario.
+  /// * 'sport': Deporte del usuario.
+  /// * 'gid': GID del usuario.
+  /// * 'location': Ubicación del usuario.
+  /// * 'cid': ID del calendario del usuario.
   ///
-  /// The user document contains the following fields:
-  /// * 'uid': the user's unique ID
-  /// * 'email': the user's email address
-  /// * 'displayName': the user's display name
-  /// * 'photoUrl': the URL of the user's profile photo
-  /// * 'type': the user's type (always 'donor')
-  /// * 'phone': the user's phone number
-  /// * 'sport': the user's sport
-  /// * 'gid': the user's GID
-  /// * 'location': the user's location
-  /// * 'cid': the ID of the user's calendar
+  /// El documento del calendario contiene los siguientes campos:
+  /// * 'uid': ID único del usuario.
+  /// * 'cid': ID del calendario.
+  /// * 'isReady': Un booleano que indica si el calendario está listo (siempre `false`).
   ///
-  /// The calendar document contains the following fields:
-  /// * 'uid': the user's unique ID
-  /// * 'cid': the ID of the calendar
-  /// * 'isReady': a boolean indicating whether the calendar is ready (always false)
+  /// La entrada de 'scholarships' contiene el siguiente campo:
+  /// * 'uid': ID único del usuario.
   ///
-  /// The 'scholarships' entry contains the following field:
-  /// * 'uid': the user's unique ID
+  /// Los parámetros [name], [phone], [sport], [gid], y [location] son opcionales y pueden ser nulos.
   ///
-  /// The [name], [phone], [sport], [gid], and [location] parameters are optional and can be null.
-  /// If [name] is null, the user's display name is used as the name.
-  /// If [phone], [sport], [gid], or [location] is null, the corresponding field in the user document is left empty.
-  ///
-  /// Throws an exception if an error occurs while adding the documents to the database.
-
+  /// Lanza una excepción si ocurre un error al agregar los documentos a la base de datos.
   Future<void> _addScholarship(String uid, String? gid, DBService dbService) async {
     var scholarship = {
       'uid': uid,
@@ -143,13 +142,14 @@ class AuthService {
     await dbService.addEntryToDBWithName(
         path: 'scholarships', entry: scholarship, name: uid);
   }
-  /// Check if a user is in the database.
+
+  /// Verifica si un usuario está en la base de datos.
   ///
-  /// This private method checks if a user with a specific uid is in the database.
+  /// Este método privado verifica si un usuario con un UID específico está en la base de datos.
   ///
-  /// @param uid The uid of the user to check.
+  /// @param uid El UID del usuario a verificar.
   ///
-  /// @return A Future that completes with a boolean. Returns true if the user is in the database, false otherwise.
+  /// @return Un `Future` que se completa con un booleano. Devuelve `true` si el usuario está en la base de datos, `false` de lo contrario.
   Future<bool> _isUserInDB({String? uid}) async {
     if (uid == null) {
       return false;
@@ -165,6 +165,13 @@ class AuthService {
     return false;
   }
 
+  /// Enviar un correo de restablecimiento de contraseña.
+  ///
+  /// Envía un correo electrónico al usuario para restablecer su contraseña.
+  ///
+  /// @param email Dirección de correo del usuario.
+  ///
+  /// @return Un `Future` que se completa con un booleano indicando si se envió correctamente.
   Future<bool> sendResetPasswordEmail(String email) async {
     try {
       await _firebaseAuth.sendPasswordResetEmail(email: email);
@@ -179,16 +186,16 @@ class AuthService {
     }
   }
 
-  /// Register a new user with email and password.
+  /// Registrar un nuevo usuario con correo y contraseña.
   ///
-  /// This method attempts to register a new user using their email and password.
-  /// If the user is already found in the database, it returns an error message.
+  /// Este método intenta registrar un nuevo usuario con su correo y contraseña.
+  /// Si el usuario ya existe en la base de datos, devuelve un mensaje de error.
   ///
-  /// @param emailAddress The email address of the new user.
-  /// @param password The password of the new user.
-  /// @param name The name of the new user.
+  /// @param emailAddress Dirección de correo del nuevo usuario.
+  /// @param password Contraseña del nuevo usuario.
+  /// @param name Nombre del nuevo usuario.
   ///
-  /// @return A Future that completes with a String. Returns 'Success' if the user is successfully registered, an error message otherwise.
+  /// @return Un `Future` que se completa con un string. Devuelve 'Success' si el registro fue exitoso, un mensaje de error de lo contrario.
   Future<String> registerWithEmailAndPass(
       {required emailAddress,
       required password,
@@ -198,14 +205,15 @@ class AuthService {
       required gid,
       required location,
       required startDate}) async {
-    // Register with email and password
+    // Registra con correo y contraseña
     FirebaseApp app = await Firebase.initializeApp(
         name: 'FCCApp', options: Firebase.app().options);
     try {
+      // Intenta registrar al usuario con las credenciales proporcionadas.
       UserCredential userCredential = await FirebaseAuth.instanceFor(app: app)
         .createUserWithEmailAndPassword(email: emailAddress, password: password);
-      // Add the new user to the database
 
+      // Añade al nuevo usuario a la base de datos.
       String? uid = FirebaseAuth.instanceFor(app: app).currentUser!.uid;
       String? email = FirebaseAuth.instanceFor(app: app).currentUser?.email;
       String? photoUrl = FirebaseAuth.instanceFor(app: app).currentUser?.photoURL;
@@ -234,15 +242,15 @@ class AuthService {
 
       await app.delete();
 
-      // If the user is successfully registered, return 'Success'
+      // Si el registro fue exitoso, devuelve 'Success'.
       return 'Success';
     } on FirebaseAuthException catch (e) {
       await app.delete();
-      // Handle FirebaseAuthExceptions
+      // Maneja excepciones de FirebaseAuth.
       return _handleFirebaseAuthException(e);
     } catch (e) {
       await app.delete();
-      // Handle any other exceptions
+      // Maneja cualquier otra excepción.
       return _handleGeneralException(e);
     }
   }

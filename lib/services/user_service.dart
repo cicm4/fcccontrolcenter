@@ -1,17 +1,18 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
-/// `UserService` class.
-///
-/// This class provides access to the current user and the stream of authentication state changes.
-/// It uses Firebase Authentication to manage users.
+/// `UserService`: Clase que maneja el acceso al usuario actual y el flujo de cambios de estado de autenticación.
+/// Utiliza Firebase Authentication para gestionar a los usuarios.
 class UserService {
-  /// Stream of authentication state changes.
+  
+  /// Flujo de cambios de estado de autenticación.
   ///
-  /// This stream emits an event whenever the user signs in or out.
+  /// Este `Stream` emite un evento cada vez que el usuario inicia o cierra sesión.
+  /// Se utiliza para detectar automáticamente los cambios en el estado de autenticación.
   final Stream<User?> userStream = FirebaseAuth.instance.authStateChanges();
 
-  /// Current user instance.
+  /// Instancia del usuario actual.
   ///
-  /// This is the instance of the currently signed-in user. It is `null` if no user is signed in.
+  /// Esta es la instancia del usuario que ha iniciado sesión actualmente.
+  /// Si ningún usuario ha iniciado sesión, será `null`.
   final User? user = FirebaseAuth.instance.currentUser;
 }

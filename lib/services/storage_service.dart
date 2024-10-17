@@ -1,6 +1,6 @@
-//This class is used to manage the storage of files using the firestore storage
-//It utilizes the firebase_storage package and is only supposed to act generaly
-//Methods such as "savePhotoToST" would not be part of this class as that is NOT a general storage service
+// Esta clase se utiliza para gestionar el almacenamiento de archivos utilizando Firebase Storage.
+// Utiliza el paquete firebase_storage y tiene la finalidad de actuar como un servicio de almacenamiento general.
+// Métodos como "guardarFotoEnST" no formarían parte de esta clase, ya que no corresponden a un servicio de almacenamiento general.
 
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
@@ -9,45 +9,45 @@ import 'dart:io';
 class StorageService {
   final st = FirebaseStorage.instance;
 
-  /// Uploads a file to Firebase Storage.
+  /// Sube un archivo a Firebase Storage.
   ///
-  /// This function uploads a file to a specified path in Firebase Storage.
-  /// It requires a file, a data, and a path as parameters. The data parameter is expected to be the name of the file.
-  /// Note that the path parameter is not expected to have a '/' at the end.
+  /// Este método sube un archivo a una ruta especificada en Firebase Storage.
+  /// Requiere un archivo (`file`), un nombre de archivo (`data`) y una ruta (`path`) como parámetros.
+  /// Nota: el parámetro `path` no debe terminar con una '/'.
   ///
-  /// @param file The file to be uploaded.
-  /// @param data The name of the file.
-  /// @param path The path in Firebase Storage where the file will be uploaded.
+  /// @param file Archivo a ser subido.
+  /// @param data Nombre del archivo.
+  /// @param path Ruta en Firebase Storage donde se almacenará el archivo.
   ///
-  /// @return A Future that completes with a boolean. Returns true if the file is successfully uploaded, false otherwise.
+  /// @return Un `Future` que completa con un booleano. Retorna `true` si el archivo se sube correctamente, `false` en caso contrario.
   Future<bool> addFile(
       {required File file, required String data, required String path}) async {
     try {
-      // Create a reference to the file in Firebase Storage
+      // Crear una referencia al archivo en Firebase Storage
       final fileRef = st.ref().child('$path/$data');
-      // Upload the file to Firebase Storage
+      // Subir el archivo a Firebase Storage
       await fileRef.putFile(file);
-      // If the file is successfully uploaded, return true
+      // Si el archivo se sube correctamente, retorna true
       return true;
     } catch (e) {
-      // If an error occurs, print the error if in debug mode
+      // Si ocurre un error, imprimir el error en modo debug
       if (kDebugMode) {
         print(e.toString());
       }
     }
-    // If an error occurs or the file is not found, return false
+    // Si ocurre un error o no se encuentra el archivo, retorna false
     return false;
   }
 
-  /// Checks if a file exists in Firebase Storage.
+  /// Verifica si un archivo existe en Firebase Storage.
   ///
-  /// This function checks if a file exists at a specified path in Firebase Storage.
-  /// It requires a data and a path as parameters. The data parameter is expected to be the name of the file.
+  /// Este método verifica si un archivo existe en una ruta específica de Firebase Storage.
+  /// Requiere un nombre de archivo (`data`) y una ruta (`path`) como parámetros.
   ///
-  /// @param data The name of the file.
-  /// @param path The path in Firebase Storage where the file is located.
+  /// @param data Nombre del archivo.
+  /// @param path Ruta en Firebase Storage donde se encuentra el archivo.
   ///
-  /// @return A Future that completes with a boolean. Returns true if the file exists, false otherwise.
+  /// @return Un `Future` que completa con un booleano. Retorna `true` si el archivo existe, `false` en caso contrario.
   Future<bool> isFileInST({required String data, required String path}) async {
     try {
       final ref = st.ref().child('$path/$data');
@@ -58,15 +58,15 @@ class StorageService {
     }
   }
 
-  /// Deletes a file from Firebase Storage.
+  /// Elimina un archivo de Firebase Storage.
   ///
-  /// This function deletes a file from a specified path in Firebase Storage.
-  /// It requires a data and a path as parameters. The data parameter is expected to be the name of the file.
+  /// Este método elimina un archivo de una ruta especificada en Firebase Storage.
+  /// Requiere un nombre de archivo (`data`) y una ruta (`path`) como parámetros.
   ///
-  /// @param data The name of the file.
-  /// @param path The path in Firebase Storage where the file is located.
+  /// @param data Nombre del archivo.
+  /// @param path Ruta en Firebase Storage donde se encuentra el archivo.
   ///
-  /// @return A Future that completes when the delete operation is done.
+  /// @return Un `Future` que completa cuando la operación de eliminación se realiza.
   Future deleteFileFromST({required String data, required String path}) async {
     try {
       final ref = st.ref().child('$path/$data');
@@ -80,30 +80,16 @@ class StorageService {
     return false;
   }
 
-  /// Fetches a file from Firebase Storage.
+  /// Obtiene un archivo de Firebase Storage.
   ///
-  /// This method retrieves a file from Firebase Storage at the specified [path] and [data].
-  /// It returns the file as a `Uint8List`.
+  /// Este método recupera un archivo de Firebase Storage en la ruta especificada (`path`) y (`data`).
+  /// Devuelve el archivo como `Uint8List`.
   ///
-  /// The [path] parameter is the path to the file in Firebase Storage.
-  /// The [data] parameter is the name of the file.
+  /// @param path Ruta del archivo en Firebase Storage.
+  /// @param data Nombre del archivo.
   ///
-  /// If the file is successfully retrieved, this method returns the file as a `Uint8List`.
-  /// If the file is not found or an error occurs during retrieval, this method returns an empty `Uint8List`.
-  ///
-  /// This method uses the `getData` method of the `Reference` class to retrieve the file.
-  /// The `getData` method retrieves up to a specified maximum size (in this case, 3 megabytes).
-  /// If the file is larger than this size, the `getData` method throws an exception.
-  /// This method catches this exception and prints it to the console in debug mode.
-  ///
-  /// Example usage:
-  ///
-  /// ```dart
-  /// final Uint8List fileData = await storageService.getFileFromST(
-  ///   path: 'path/to/file',
-  ///   data: 'filename',
-  /// );
-  /// ```
+  /// @return Si el archivo se recupera correctamente, se devuelve como `Uint8List`.
+  /// Si no se encuentra el archivo o ocurre un error durante la recuperación, devuelve un `Uint8List` vacío.
   Future<Uint8List> getFileFromST(
       {required String path, required String data}) async {
     try {
@@ -111,12 +97,10 @@ class StorageService {
       const oneMegabyte = 1024 * 1024;
       final pathRef = storageRef.child('$path/$data');
       if (kDebugMode) {
-        print('retriving with final file path: $path/$data');
+        print('Retrieving with final file path: $path/$data');
       }
       final Uint8List? dataList = await pathRef.getData(3 * oneMegabyte);
-      return dataList ??
-          Uint8List(
-              0); //returns dataList if there is data in datalist, else returns empty Uint8List
+      return dataList ?? Uint8List(0);
     } catch (e) {
       if (kDebugMode) {
         print(e.toString());
@@ -125,6 +109,14 @@ class StorageService {
     return Uint8List(0);
   }
 
+  /// Obtiene la URL de descarga de un archivo en Firebase Storage.
+  ///
+  /// Este método obtiene la URL de descarga de un archivo almacenado en Firebase Storage en la ruta especificada.
+  ///
+  /// @param path Ruta del archivo en Firebase Storage.
+  /// @param data Nombre del archivo.
+  ///
+  /// @return Un `Future` que completa con un `String`. Retorna la URL de descarga si se obtiene correctamente, o `null` si ocurre un error.
   Future<String?> getFileURL(
       {required String path, required String data}) async {
     try {
@@ -138,6 +130,16 @@ class StorageService {
     }
   }
 
+  /// Escribe un archivo en la ruta especificada en Firebase Storage.
+  ///
+  /// Este método escribe un archivo desde el almacenamiento local en una ruta específica de Firebase Storage.
+  ///
+  /// @param dir Directorio donde se encuentra el archivo.
+  /// @param file Archivo a escribir.
+  /// @param path Ruta en Firebase Storage donde se almacenará el archivo.
+  /// @param data Nombre del archivo.
+  ///
+  /// @return Un `Future` que completa con un booleano. Retorna `true` si la operación se completa correctamente, o `false` si ocurre un error.
   Future<bool> writeToFile(
       {required Directory dir,
       required File file,

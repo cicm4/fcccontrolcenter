@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 
-// Import necessary services and widgets
+// Importar los servicios y widgets necesarios
 import 'package:fcccontrolcenter/services/database_service.dart';
 import 'package:fcccontrolcenter/services/scholarship_service.dart';
 import 'package:fcccontrolcenter/services/storage_service.dart';
@@ -12,12 +12,16 @@ import 'package:fcccontrolcenter/services/db_user_service.dart';
 import 'home_table.dart';
 import 'create_user_button.dart';
 import 'scholarship_popup.dart';
-import 'ayudas_popup.dart'; // Import AyudasPopup
+import 'ayudas_popup.dart';
 
+/// `Home`: Widget que representa la vista principal del administrador.
+///
+/// Este widget proporciona una vista general para los administradores, que incluye la capacidad
+/// de ver la lista de usuarios, actualizarlos, eliminarlos, crear nuevos usuarios y gestionar las solicitudes de ayuda.
 class Home extends StatefulWidget {
-  final DBService dbs;
-  final StorageService st;
-  final AuthService auth;
+  final DBService dbs; // Servicio de base de datos
+  final StorageService st; // Servicio de almacenamiento
+  final AuthService auth; // Servicio de autenticación
 
   const Home({
     super.key,
@@ -27,7 +31,6 @@ class Home extends StatefulWidget {
   });
 
   @override
-  // ignore: library_private_types_in_public_api
   _HomeState createState() => _HomeState();
 }
 
@@ -39,19 +42,19 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
-    _fetchUsers(); // Initial fetch
+    _fetchUsers(); // Realiza la búsqueda inicial de los usuarios.
   }
 
-  // Fetch all users from the database
+  /// Obtiene todos los usuarios de la base de datos.
   Future<void> _fetchUsers() async {
     final fetchedUsers = await DBUserService.getAllUsers(widget.dbs);
     setState(() {
       users = fetchedUsers;
-      originalUsers = List.from(fetchedUsers!); // Clone the list to track changes
+      originalUsers = List.from(fetchedUsers!); // Clona la lista para rastrear cambios.
     });
   }
 
-  // Method to refresh the user table
+  /// Método para refrescar la tabla de usuarios.
   Future<void> refreshUserTable() async {
     Navigator.of(context).pop();
     Navigator.of(context).popAndPushNamed('/home');
@@ -59,6 +62,7 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    // Mostrar un indicador de carga si los usuarios no se han obtenido aún.
     if (users == null) {
       return const Scaffold(
         body: Center(
@@ -67,6 +71,7 @@ class _HomeState extends State<Home> {
       );
     }
 
+    // Mostrar un mensaje si no se encuentran usuarios.
     if (users!.isEmpty) {
       return const Scaffold(
         body: Center(
@@ -107,13 +112,15 @@ class _HomeState extends State<Home> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // Botón para crear un nuevo usuario.
                 CreateUserButton(
                   authService: widget.auth,
-                  refreshUserTable: refreshUserTable, // Pass the refresh function
-                ), // Button for creating new users
+                  refreshUserTable: refreshUserTable,
+                ),
                 const SizedBox(width: 20),
+                // Botón para guardar los cambios realizados en los usuarios.
                 ElevatedButton(
-                  onPressed: _updateUsers, // Save changes
+                  onPressed: _updateUsers,
                   style: ElevatedButton.styleFrom(),
                   child: const Text(
                     'Guardar Cambios',
@@ -123,7 +130,8 @@ class _HomeState extends State<Home> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 20), // Add some spacing
+                const SizedBox(width: 20),
+                // Botón para abrir el diálogo de solicitudes de ayuda.
                 ElevatedButton(
                   onPressed: () {
                     showDialog(
@@ -148,6 +156,7 @@ class _HomeState extends State<Home> {
               ],
             ),
             const SizedBox(height: 10),
+            // Tabla que muestra la lista de usuarios.
             Expanded(
               child: Container(
                 margin: const EdgeInsets.all(16.0),
@@ -174,9 +183,10 @@ class _HomeState extends State<Home> {
               ),
             ),
             const SizedBox(height: 10),
+            // Botón para cerrar sesión.
             TextButton(
               onPressed: () async {
-                await AuthService.signOut(); // Sign out functionality
+                await AuthService.signOut(); // Funcionalidad de cierre de sesión.
               },
               child: const Text(
                 "Logout",
@@ -195,46 +205,44 @@ class _HomeState extends State<Home> {
     );
   }
 
-  // Update a single user if changes are detected
+  /// Actualiza un solo usuario si se detectan cambios.
   void _updateUser(int index) async {
     if (users![index] != originalUsers![index]) {
-      await DBUserService.updateUser(
-          widget.dbs, users![index]['uid'], users![index]);
+      await DBUserService.updateUser(widget.dbs, users![index]['uid'], users![index]);
     }
     setState(() {
       originalUsers = List.from(users!);
     });
   }
 
-  // Update all users that have changes
+  /// Actualiza todos los usuarios que han tenido cambios.
   Future<void> _updateUsers() async {
     for (int i = 0; i < users!.length; i++) {
       if (users![i] != originalUsers![i]) {
         await DBUserService.updateUser(widget.dbs, users![i]['uid'], users![i]);
       }
     }
-    await _fetchUsers(); // Refresh the user list
+    await _fetchUsers(); // Refresca la lista de usuarios.
   }
 
-  // Confirm before deleting a user
+  /// Confirmación antes de eliminar un usuario.
   void _deleteUser(int index) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text('Eliminar Usuario'),
-          content: const Text(
-              'Seguro que deseas eliminar este usuario, esta accion es permanente'),
+          content: const Text('Seguro que deseas eliminar este usuario, esta acción es permanente'),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close dialog
+                Navigator.of(context).pop(); // Cierra el diálogo.
               },
               child: const Text('No', style: TextStyle(color: Colors.green)),
             ),
             TextButton(
               onPressed: () async {
-                DBUserService.removeUser(widget.dbs, users![index]['uid']);
+                await DBUserService.removeUser(widget.dbs, users![index]['uid']);
                 Navigator.of(context).pop();
                 Navigator.of(context).popAndPushNamed('/home');
               },
@@ -246,7 +254,7 @@ class _HomeState extends State<Home> {
     );
   }
 
-  // Show scholarship information for a user
+  /// Muestra la información de la beca de un usuario.
   void _showScholarshipInfo(int index) async {
     final user = users![index];
     final scholarshipService = await ScholarshipService.create(
@@ -255,7 +263,7 @@ class _HomeState extends State<Home> {
     );
     final scholarshipData = scholarshipService.getScholarshipData();
 
-    // ignore: use_build_context_synchronously
+    // Muestra el cuadro de diálogo con los detalles de la beca.
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -264,7 +272,7 @@ class _HomeState extends State<Home> {
           scholarshipData: scholarshipData!,
           removeFile: (fileType) async {
             await scholarshipService.removeFile(fileType, widget.st);
-            await _fetchUsers(); // Refresh the user list
+            await _fetchUsers(); // Refresca la lista de usuarios.
           },
           downloadFile: (fileType) async {
             final fileDataUrl = await scholarshipService.getURLFileURL(
@@ -294,7 +302,6 @@ class _HomeState extends State<Home> {
                           : fileDataUrl.contains('.jpg')
                               ? '.jpg'
                               : '';
-              //name based on URL File Type where matriculaURL is matricula, horarioURL is horario, soporteURL is soporte
               final name = fileType == 'matriculaURL'
                   ? 'matricula'
                   : fileType == 'horarioURL'
@@ -304,8 +311,7 @@ class _HomeState extends State<Home> {
                           : fileType == 'bankaccountURL'
                               ? 'bankaccount'
                               : '';
-              final savePath =
-                  '${downloadDir!.path}/$name${user['displayName']}$extensionType';
+              final savePath = '${downloadDir!.path}/$name${user['displayName']}$extensionType';
               final uri = Uri.parse(fileDataUrl);
 
               await Dio().downloadUri(uri, savePath);

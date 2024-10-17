@@ -5,19 +5,28 @@ import 'package:csv/csv.dart';
 import 'dart:io';
 import 'package:intl/intl.dart';
 
+/// `CreateUserButton`: Un botón que permite la creación de usuarios individuales o masivos.
+///
+/// Este botón, al ser presionado, muestra un diálogo con dos opciones: registrar un usuario individualmente
+/// o registrar varios usuarios a través de un archivo CSV. Utiliza los servicios de autenticación proporcionados por `AuthService`.
 class CreateUserButton extends StatelessWidget {
   final AuthService authService;
   final Function refreshUserTable;
 
+  /// Constructor de `CreateUserButton`.
+  ///
+  /// - `authService`: Instancia del servicio de autenticación.
+  /// - `refreshUserTable`: Función que actualiza la tabla de usuarios después de la creación.
   const CreateUserButton({
-    Key? key,
+    super.key,
     required this.authService,
     required this.refreshUserTable,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
+      // Al presionar el botón, se muestra un diálogo para elegir el tipo de registro.
       onPressed: () {
         showDialog(
           context: context,
@@ -34,7 +43,7 @@ class CreateUserButton extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () {
                       Navigator.of(context).pop();
-                      _showSingleUserDialog(context);
+                      _showSingleUserDialog(context); // Llama al diálogo de creación individual.
                     },
                     child: const Text('Registrar Uno'),
                   ),
@@ -42,7 +51,7 @@ class CreateUserButton extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () {
                       Navigator.of(context).pop();
-                      _showBulkUserDialog(context);
+                      _showBulkUserDialog(context); // Llama al diálogo de creación masiva.
                     },
                     child: const Text('Registrar Varios'),
                   ),
@@ -56,16 +65,16 @@ class CreateUserButton extends StatelessWidget {
     );
   }
 
-  /// Shows a dialog for single user registration.
+  /// Muestra un diálogo para registrar un solo usuario.
   void _showSingleUserDialog(BuildContext context) {
     final TextEditingController emailController = TextEditingController();
     final TextEditingController nameController = TextEditingController();
     final TextEditingController gidController = TextEditingController();
     final TextEditingController phoneController = TextEditingController();
 
-    String location = 'Medellin'; // Default location
-    String sport = 'Tennis'; // Default sport
-    String startDate = DateFormat('yyyy-MM-dd').format(DateTime.now()); // Current date
+    String location = 'Medellin'; // Ubicación predeterminada
+    String sport = 'Tennis'; // Deporte predeterminado
+    String startDate = DateFormat('yyyy-MM-dd').format(DateTime.now()); // Fecha actual como predeterminada.
 
     showDialog(
       context: context,
@@ -85,7 +94,7 @@ class CreateUserButton extends StatelessWidget {
                 ),
                 TextField(
                   controller: gidController,
-                  decoration: const InputDecoration(labelText: 'Cedula'),
+                  decoration: const InputDecoration(labelText: 'Cédula'),
                 ),
                 DropdownButtonFormField<String>(
                   value: location,
@@ -118,7 +127,7 @@ class CreateUserButton extends StatelessWidget {
                   decoration: const InputDecoration(labelText: 'Deporte'),
                 ),
                 const SizedBox(height: 10),
-                Text('Fecha de Inicio: $startDate'),
+                Text('Fecha de Inicio: $startDate'), // Fecha predeterminada
               ],
             ),
           ),
@@ -132,12 +141,14 @@ class CreateUserButton extends StatelessWidget {
             ElevatedButton(
               child: const Text('Crear'),
               onPressed: () async {
+                // Toma los valores ingresados por el usuario.
                 String email = emailController.text.trim();
                 String name = nameController.text.trim();
                 String gid = gidController.text.trim();
                 String phone = phoneController.text.trim();
-                String password = '$name${DateTime.now().year}'; // Password: name + current year
+                String password = '$name${DateTime.now().year}'; // Contraseña: nombre + año actual
 
+                // Registra el usuario con los datos proporcionados.
                 String result = await authService.registerWithEmailAndPass(
                   emailAddress: email,
                   password: password,
@@ -149,12 +160,13 @@ class CreateUserButton extends StatelessWidget {
                   startDate: startDate,
                 );
 
+                // Muestra mensajes según el resultado del registro.
                 if (result == 'Success') {
                   await refreshUserTable();
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Usuario creado exitosamente')),
-                  ); // Reload the user table
+                  );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Error: $result')),
@@ -168,8 +180,9 @@ class CreateUserButton extends StatelessWidget {
     );
   }
 
-  /// Shows a dialog for bulk user registration via CSV.
+  /// Muestra un diálogo para registrar usuarios masivamente utilizando un archivo CSV.
   void _showBulkUserDialog(BuildContext context) async {
+    // Abre un selector de archivos para seleccionar un archivo CSV.
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['csv'],
@@ -179,11 +192,12 @@ class CreateUserButton extends StatelessWidget {
       File file = File(result.files.single.path!);
       String csvContent = file.readAsStringSync();
 
+      // Convierte el contenido del CSV a una lista de valores.
       List<List<dynamic>> rowsAsListOfValues = const CsvToListConverter().convert(csvContent);
 
       bool hasError = false;
 
-      // Skip header row if it exists
+      // Procesa las filas del CSV, comenzando después del encabezado.
       for (var row in rowsAsListOfValues.skip(1)) {
         String email = row[0];
         String name = row[1];
@@ -192,8 +206,9 @@ class CreateUserButton extends StatelessWidget {
         String phone = row[4];
         String sport = row[5];
         String startDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
-        String password = '$name${DateTime.now().year}'; // Password: name + current year
+        String password = '$name${DateTime.now().year}'; // Contraseña: nombre + año actual
 
+        // Intenta registrar al usuario con los datos proporcionados.
         String result = await authService.registerWithEmailAndPass(
           emailAddress: email,
           password: password,
@@ -205,6 +220,7 @@ class CreateUserButton extends StatelessWidget {
           startDate: startDate,
         );
 
+        // Si ocurre un error, lo registra.
         if (result != 'Success') {
           hasError = true;
           ScaffoldMessenger.of(context).showSnackBar(
@@ -213,13 +229,14 @@ class CreateUserButton extends StatelessWidget {
         }
       }
 
+      // Si no hubo errores, muestra un mensaje de éxito.
       if (!hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Proceso de creación masiva completado')),
         );
       }
 
-      refreshUserTable(); // Reload the user table
+      refreshUserTable(); // Actualiza la tabla de usuarios.
     }
   }
 }

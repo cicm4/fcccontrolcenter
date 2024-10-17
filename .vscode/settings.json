@@ -1,4 +1,10 @@
 {
     "java.compile.nullAnalysis.mode": "automatic",
-    "cmake.configureOnOpen": true
+    "cmake.configureOnOpen": true,
+    "cmake.sourceDirectory": "C:/Users/camil/Code/fcccontrolcenter/build/windows/x64/extracted/firebase_cpp_sdk_windows",
+    "files.associations": {
+        "functional": "cpp",
+        "optional": "cpp",
+        "xstring": "cpp"
+    }
 }
